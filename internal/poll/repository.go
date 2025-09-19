@@ -14,7 +14,7 @@ type pollRepository struct {
 	db *gorm.DB
 }
 
-func newPollRepository(db *gorm.DB) RepositoryIface {
+func NewPollRepository(db *gorm.DB) RepositoryIface {
 	return &pollRepository{db: db}
 }
 

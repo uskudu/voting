@@ -20,7 +20,7 @@ func Init() (*gorm.DB, error) {
 		log.Fatalf("couldnt connect to db: %v", err)
 	}
 
-	if err := db.AutoMigrate(&poll.Poll{}, &poll.Option{}, &poll.Vote{}); err != nil {
+	if err := db.AutoMigrate(&poll.Poll{}, &poll.Option{}); err != nil {
 		log.Fatalf("couldnt migrate: %v", err)
 	}
 	return db, nil

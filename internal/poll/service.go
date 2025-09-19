@@ -1,6 +1,8 @@
 package poll
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 )
 
@@ -39,15 +41,41 @@ func (s *pollService) CreatePoll(title string, options []string) error {
 	return nil
 }
 
-func GetPolls() ([]Poll, error) {
-
+func (s *pollService) GetPolls() ([]Poll, error) {
+	return s.repo.GetPolls()
 }
-func GetPollByID(id string) (Poll, error) {
 
+func (s *pollService) GetPollByID(id string) (Poll, error) {
+	return s.repo.GetPollByID(id)
 }
-func UpdatePoll(id, title string, options []string) error {
 
+func (s *pollService) UpdatePoll(id, title string, options []string) error {
+	pollFromDB, err := s.repo.GetPollByID(id)
+	if err != nil {
+		return err
+	}
+	for _, option := range pollFromDB.Options {
+		if option.Votes != 0 {
+			return fmt.Errorf("error while updating: you cant edit poll containing one or more votes")
+		}
+	}
+
+	pollFromDB.Title = title
+	pollFromDB.Options = []Option{}
+	for _, o := range options {
+		pollFromDB.Options = append(pollFromDB.Options, Option{
+			ID:     uuid.NewString(),
+			Text:   o,
+			PollID: pollFromDB.ID,
+		})
+	}
+
+	if err := s.repo.UpdatePoll(pollFromDB); err != nil {
+		return err
+	}
+	return nil
 }
-func DeletePoll(id string) error {
 
+func (s *pollService) DeletePoll(id string) error {
+	return s.repo.DeletePoll(id)
 }

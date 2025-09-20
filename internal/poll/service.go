@@ -2,15 +2,13 @@ package poll
 
 import (
 	"fmt"
-
-	"github.com/google/uuid"
 )
 
-type PollIface interface {
-	CreatePoll(title string, options []string) error
+type ServiceIface interface {
+	CreatePoll(title string, options []Option) error
 	GetPolls() ([]Poll, error)
 	GetPollByID(id string) (Poll, error)
-	UpdatePoll(id, title string, options []string) error
+	UpdatePoll(id string, poll Poll) error
 	DeletePoll(id string) error
 }
 
@@ -18,19 +16,17 @@ type pollService struct {
 	repo RepositoryIface
 }
 
-func NewPollService(r RepositoryIface) PollIface {
+func NewPollService(r RepositoryIface) ServiceIface {
 	return &pollService{repo: r}
 }
 
-func (s *pollService) CreatePoll(title string, options []string) error {
+func (s *pollService) CreatePoll(title string, options []Option) error {
 	poll := Poll{
-		ID:    uuid.NewString(),
 		Title: title,
 	}
-	for _, text := range options {
+	for _, opt := range options {
 		option := Option{
-			ID:     uuid.NewString(),
-			Text:   text,
+			Text:   opt.Text,
 			PollID: poll.ID,
 		}
 		poll.Options = append(poll.Options, option)
@@ -49,7 +45,7 @@ func (s *pollService) GetPollByID(id string) (Poll, error) {
 	return s.repo.GetPollByID(id)
 }
 
-func (s *pollService) UpdatePoll(id, title string, options []string) error {
+func (s *pollService) UpdatePoll(id string, poll Poll) error {
 	pollFromDB, err := s.repo.GetPollByID(id)
 	if err != nil {
 		return err
@@ -60,15 +56,14 @@ func (s *pollService) UpdatePoll(id, title string, options []string) error {
 		}
 	}
 
-	pollFromDB.Title = title
-	pollFromDB.Options = []Option{}
-	for _, o := range options {
-		pollFromDB.Options = append(pollFromDB.Options, Option{
-			ID:     uuid.NewString(),
-			Text:   o,
-			PollID: pollFromDB.ID,
-		})
-	}
+	pollFromDB.Title = poll.Title
+	pollFromDB.Options = poll.Options
+	//for _, o := range poll.Options {
+	//	pollFromDB.Options = append(pollFromDB.Options, Option{
+	//		Text:   o.Text,
+	//		PollID: pollFromDB.ID,
+	//	})
+	//}
 
 	if err := s.repo.UpdatePoll(pollFromDB); err != nil {
 		return err

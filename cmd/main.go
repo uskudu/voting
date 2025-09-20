@@ -3,6 +3,7 @@ package main
 import (
 	"voting/initializers"
 	"voting/internal/db"
+	"voting/internal/poll"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,15 +14,18 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	var _ = database
+
+	pollRepo := poll.NewPollRepository(database)
+	pollService := poll.NewPollService(pollRepo)
+	pollHandlers := poll.NewPollHandler(pollService)
+
 	r := gin.Default()
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200,
-			gin.H{
-				"message": "pong",
-			})
-	})
+	r.POST("/poll", pollHandlers.PostPoll)
+	r.GET("/polls", pollHandlers.GetPolls)
+	r.GET("/poll/:id", pollHandlers.GetPoll)
+	r.PATCH("/poll/:id", pollHandlers.PatchPoll)
+	r.DELETE("/poll/:id", pollHandlers.DeletePoll)
 
 	r.Run(":8080")
 }

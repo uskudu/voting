@@ -1,0 +1,5 @@
+CREATE TABLE poll
+(
+    id    INT GENERATED ALWAYS AS IDENTITY,
+    title TEXT NOT NULL
+);

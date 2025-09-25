@@ -18,7 +18,7 @@ func setupRepo(t *testing.T) poll.RepositoryIface {
 	return poll.NewPollRepository(db)
 }
 
-func TestCreatePoll(t *testing.T) {
+func TestCreatePollRepo(t *testing.T) {
 	repo := setupRepo(t)
 
 	p := &poll.Poll{
@@ -42,7 +42,7 @@ func TestCreatePoll(t *testing.T) {
 	require.Len(t, got.Options, 2)
 }
 
-func TestGetPolls(t *testing.T) {
+func TestGetPollsRepo(t *testing.T) {
 	repo := setupRepo(t)
 
 	pollsToCreate := []poll.Poll{
@@ -73,3 +73,80 @@ func TestGetPolls(t *testing.T) {
 	require.Equal(t, "test get polls 1", polls[0].Title)
 	require.Equal(t, "test get polls 2", polls[1].Title)
 }
+
+func TestGetPollByIDRepo(t *testing.T) {
+	repo := setupRepo(t)
+
+	p := &poll.Poll{
+		Title: "test get poll by id",
+		Options: []poll.Option{
+			{Text: "a"},
+			{Text: "b"},
+		},
+	}
+
+	err := repo.CreatePoll(p)
+	require.NoError(t, err)
+
+	got, err := repo.GetPollByID("1")
+	require.NoError(t, err)
+	require.Equal(t, "test get poll by id", got.Title)
+	require.Len(t, got.Options, 2, "should get all options")
+}
+
+func TestUpdatePollRepo(t *testing.T) {
+	repo := setupRepo(t)
+
+	p := &poll.Poll{
+		Title: "old title",
+		Options: []poll.Option{
+			{Text: "a"},
+			{Text: "b"},
+		},
+	}
+
+	err := repo.CreatePoll(p)
+	require.NoError(t, err)
+	// check if old is ok
+	old, err := repo.GetPollByID("1")
+	require.NoError(t, err)
+	require.Equal(t, "old title", old.Title)
+	require.Len(t, old.Options, 2, "old has two options")
+
+	upd := &poll.Poll{
+		ID:      1,
+		Title:   "updated title",
+		Options: nil,
+	}
+	err = repo.UpdatePoll(upd)
+	require.NoError(t, err)
+	// check if updated is ok
+	updated, err := repo.GetPollByID("1")
+	require.NoError(t, err)
+	require.Equal(t, "updated title", updated.Title)
+	require.Empty(t, updated.Options, "updated has no options")
+}
+
+func TestDeletePollRepo(t *testing.T) {
+	repo := setupRepo(t)
+
+	p := &poll.Poll{
+		Title: "delete test",
+		Options: []poll.Option{
+			{Text: "a"},
+			{Text: "b"},
+		},
+	}
+
+	err := repo.CreatePoll(p)
+	require.NoError(t, err)
+
+	err = repo.DeletePoll("1")
+	require.NoError(t, err)
+
+	got, err := repo.GetPollByID("1")
+	require.Error(t, err)
+	require.Empty(t, got)
+}
+
+// todo somewhere id is int somewhere its string

@@ -31,7 +31,7 @@ func (s *pollService) CreatePoll(title string, options []Option) error {
 		}
 		poll.Options = append(poll.Options, option)
 	}
-	if err := s.repo.CreatePoll(poll); err != nil {
+	if err := s.repo.CreatePoll(&poll); err != nil {
 		return err
 	}
 	return nil
@@ -52,20 +52,20 @@ func (s *pollService) UpdatePoll(id string, poll Poll) error {
 	}
 	for _, option := range pollFromDB.Options {
 		if option.Votes != 0 {
-			return fmt.Errorf("error while updating: you cant edit poll containing one or more votes")
+			return fmt.Errorf("error while updating: you cant edit testPoll containing one or more votes")
 		}
 	}
 
 	pollFromDB.Title = poll.Title
 	pollFromDB.Options = poll.Options
-	//for _, o := range poll.Options {
+	//for _, o := range testPoll.Options {
 	//	pollFromDB.Options = append(pollFromDB.Options, Option{
 	//		Text:   o.Text,
 	//		PollID: pollFromDB.ID,
 	//	})
 	//}
 
-	if err := s.repo.UpdatePoll(pollFromDB); err != nil {
+	if err := s.repo.UpdatePoll(&pollFromDB); err != nil {
 		return err
 	}
 	return nil

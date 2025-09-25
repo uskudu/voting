@@ -7,51 +7,51 @@ import (
 )
 
 type RepositoryIface interface {
-	CreatePoll(poll Poll) error
+	CreatePoll(poll *Poll) error
 	GetPolls() ([]Poll, error)
 	GetPollByID(id string) (Poll, error)
-	UpdatePoll(poll Poll) error
+	UpdatePoll(poll *Poll) error
 	DeletePoll(id string) error
 }
 
-type pollRepository struct {
-	db *gorm.DB
+type PollRepository struct {
+	DB *gorm.DB
 }
 
 func NewPollRepository(db *gorm.DB) RepositoryIface {
-	return &pollRepository{db: db}
+	return &PollRepository{DB: db}
 }
 
-func (r *pollRepository) CreatePoll(poll Poll) error {
-	return r.db.Create(&poll).Error
+func (r *PollRepository) CreatePoll(poll *Poll) error {
+	return r.DB.Create(&poll).Error
 }
 
-func (r *pollRepository) GetPolls() ([]Poll, error) {
+func (r *PollRepository) GetPolls() ([]Poll, error) {
 	var polls []Poll
-	err := r.db.Preload("Options").Find(&polls).Error
+	err := r.DB.Preload("Options").Find(&polls).Error
 	return polls, err
 }
 
-func (r *pollRepository) GetPollByID(id string) (Poll, error) {
+func (r *PollRepository) GetPollByID(id string) (Poll, error) {
 	var poll Poll
-	err := r.db.Preload("Options").First(&poll, "id = ?", id).Error
+	err := r.DB.Preload("Options").First(&poll, "id = ?", id).Error
 	return poll, err
 }
 
-func (r *pollRepository) UpdatePoll(poll Poll) error {
-	if err := r.db.Where("poll_id = ?", poll.ID).Delete(&Option{}).Error; err != nil {
+func (r *PollRepository) UpdatePoll(poll *Poll) error {
+	if err := r.DB.Where("poll_id = ?", poll.ID).Delete(&Option{}).Error; err != nil {
 		return err
 	}
-	return r.db.Session(&gorm.Session{FullSaveAssociations: true}).Save(&poll).Error
+	return r.DB.Session(&gorm.Session{FullSaveAssociations: true}).Save(&poll).Error
 }
 
-func (r *pollRepository) DeletePoll(id string) error {
-	result := r.db.Delete(&Poll{}, "id = ?", id)
+func (r *PollRepository) DeletePoll(id string) error {
+	result := r.DB.Delete(&Poll{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("poll not found")
+		return fmt.Errorf("testPoll not found")
 	}
 	return nil
 }

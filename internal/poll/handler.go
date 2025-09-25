@@ -21,10 +21,10 @@ func (h *Handler) PostPoll(c *gin.Context) {
 		return
 	}
 	if err := h.service.CreatePoll(req.Title, req.Options); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"failed creating poll": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"failed creating testPoll": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "poll created"})
+	c.JSON(http.StatusOK, gin.H{"message": "testPoll created"})
 }
 
 func (h *Handler) GetPolls(c *gin.Context) {
@@ -55,10 +55,10 @@ func (h *Handler) PatchPoll(c *gin.Context) {
 	}
 	err := h.service.UpdatePoll(id, poll)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update poll"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update testPoll"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "poll updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "testPoll updated"})
 
 }
 
@@ -68,5 +68,5 @@ func (h *Handler) DeletePoll(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "poll deleted"})
+	c.JSON(http.StatusOK, gin.H{"message": "testPoll deleted"})
 }

@@ -10,24 +10,22 @@ import (
 
 func setupRepo(t *testing.T) poll.RepositoryIface {
 	db := dbMock.SqliteMock()
-
 	if err := db.AutoMigrate(&poll.Poll{}, &poll.Option{}); err != nil {
 		panic(err)
 	}
-
 	return poll.NewPollRepository(db)
+}
+
+var p = &poll.Poll{
+	Title: "test poll",
+	Options: []poll.Option{
+		{Text: "a"},
+		{Text: "b"},
+	},
 }
 
 func TestCreatePollRepo(t *testing.T) {
 	repo := setupRepo(t)
-
-	p := &poll.Poll{
-		Title: "test create poll",
-		Options: []poll.Option{
-			{Text: "a"},
-			{Text: "b"},
-		},
-	}
 
 	err := repo.CreatePoll(p)
 	require.NoError(t, err)
@@ -38,7 +36,7 @@ func TestCreatePollRepo(t *testing.T) {
 	err = repo.(*poll.PollRepository).DB.Preload("Options").First(&got, p.ID).Error
 
 	require.NoError(t, err)
-	require.Equal(t, "test create poll", got.Title)
+	require.Equal(t, "test poll", got.Title)
 	require.Len(t, got.Options, 2)
 }
 
@@ -77,46 +75,32 @@ func TestGetPollsRepo(t *testing.T) {
 func TestGetPollByIDRepo(t *testing.T) {
 	repo := setupRepo(t)
 
-	p := &poll.Poll{
-		Title: "test get poll by id",
-		Options: []poll.Option{
-			{Text: "a"},
-			{Text: "b"},
-		},
-	}
-
 	err := repo.CreatePoll(p)
 	require.NoError(t, err)
 
 	got, err := repo.GetPollByID("1")
 	require.NoError(t, err)
-	require.Equal(t, "test get poll by id", got.Title)
+	require.Equal(t, "test poll", got.Title)
 	require.Len(t, got.Options, 2, "should get all options")
 }
 
 func TestUpdatePollRepo(t *testing.T) {
 	repo := setupRepo(t)
 
-	p := &poll.Poll{
-		Title: "old title",
-		Options: []poll.Option{
-			{Text: "a"},
-			{Text: "b"},
-		},
-	}
-
 	err := repo.CreatePoll(p)
 	require.NoError(t, err)
 	// check if old is ok
 	old, err := repo.GetPollByID("1")
 	require.NoError(t, err)
-	require.Equal(t, "old title", old.Title)
+	require.Equal(t, "test poll", old.Title)
 	require.Len(t, old.Options, 2, "old has two options")
 
 	upd := &poll.Poll{
-		ID:      1,
-		Title:   "updated title",
-		Options: nil,
+		ID:    1,
+		Title: "updated title",
+		Options: []poll.Option{
+			{Text: "the only option"},
+		},
 	}
 	err = repo.UpdatePoll(upd)
 	require.NoError(t, err)
@@ -124,19 +108,12 @@ func TestUpdatePollRepo(t *testing.T) {
 	updated, err := repo.GetPollByID("1")
 	require.NoError(t, err)
 	require.Equal(t, "updated title", updated.Title)
-	require.Empty(t, updated.Options, "updated has no options")
+	require.Len(t, updated.Options, 1, "updated has only one option")
+	require.True(t, updated.Options[0].Text == "the only option")
 }
 
 func TestDeletePollRepo(t *testing.T) {
 	repo := setupRepo(t)
-
-	p := &poll.Poll{
-		Title: "delete test",
-		Options: []poll.Option{
-			{Text: "a"},
-			{Text: "b"},
-		},
-	}
 
 	err := repo.CreatePoll(p)
 	require.NoError(t, err)

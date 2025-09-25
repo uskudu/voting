@@ -72,7 +72,7 @@ func TestGetPollsService(t *testing.T) {
 	require.Equal(t, "test get polls 2", polls[1].Title)
 }
 
-func TestGetPollByID(t *testing.T) {
+func TestGetPollByIDService(t *testing.T) {
 	service := setupService(t)
 
 	// todo create it without using service.CreatePoll
@@ -95,7 +95,7 @@ func TestGetPollByID(t *testing.T) {
 	require.Len(t, got.Options, 2, "poll should have 2 options")
 }
 
-func TestUpdatePoll(t *testing.T) {
+func TestUpdatePollService(t *testing.T) {
 	service := setupService(t)
 
 	// todo create it without using service.CreatePoll
@@ -136,4 +136,28 @@ func TestUpdatePoll(t *testing.T) {
 	require.True(t, got.Options[0].Text == "updated option a")
 	require.True(t, got.Options[1].Text == "updated option b")
 	require.True(t, got.Options[2].Text == "new option c")
+}
+
+func TestDeletePollService(t *testing.T) {
+	service := setupService(t)
+
+	// todo create it without using service.CreatePoll
+	title := "old title"
+	options := []poll.Option{
+		poll.Option{
+			Text: "old option a",
+		},
+		poll.Option{
+			Text: "old option b",
+		},
+	}
+	err := service.CreatePoll(title, options)
+	require.NoError(t, err)
+
+	err = service.DeletePoll("1")
+	require.NoError(t, err)
+
+	got, err := service.GetPollByID("1")
+	require.Error(t, err)
+	require.Empty(t, got)
 }

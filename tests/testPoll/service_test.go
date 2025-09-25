@@ -88,10 +88,52 @@ func TestGetPollByID(t *testing.T) {
 	err := service.CreatePoll(title, options)
 	require.NoError(t, err)
 
-	poll, err := service.GetPollByID("1")
+	got, err := service.GetPollByID("1")
 	require.NoError(t, err)
-	require.Equal(t, 1, poll.ID)
-	require.Equal(t, "test get poll by id", poll.Title)
-	require.Len(t, poll.Options, 2, "poll should have 2 options")
+	require.Equal(t, 1, got.ID)
+	require.Equal(t, "test get poll by id", got.Title)
+	require.Len(t, got.Options, 2, "poll should have 2 options")
+}
 
+func TestUpdatePoll(t *testing.T) {
+	service := setupService(t)
+
+	// todo create it without using service.CreatePoll
+	title := "old title"
+	options := []poll.Option{
+		poll.Option{
+			Text: "old option a",
+		},
+		poll.Option{
+			Text: "old option b",
+		},
+	}
+	err := service.CreatePoll(title, options)
+	require.NoError(t, err)
+
+	upd_poll := poll.Poll{
+		Title: "updated title",
+		Options: []poll.Option{
+			{
+				Text: "updated option a",
+			},
+			{
+				Text: "updated option b",
+			},
+			{
+				Text: "new option c",
+			},
+		},
+	}
+
+	err = service.UpdatePoll("1", upd_poll)
+	require.NoError(t, err)
+
+	got, err := service.GetPollByID("1")
+	require.NoError(t, err)
+	require.Equal(t, "updated title", got.Title)
+	require.Len(t, got.Options, 3, "updated poll has 3 options")
+	require.True(t, got.Options[0].Text == "updated option a")
+	require.True(t, got.Options[1].Text == "updated option b")
+	require.True(t, got.Options[2].Text == "new option c")
 }

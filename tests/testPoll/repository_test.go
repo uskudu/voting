@@ -126,4 +126,4 @@ func TestDeletePollRepo(t *testing.T) {
 	require.Empty(t, got)
 }
 
-// todo somewhere id is int somewhere its string
+// todo somewhere id is int somewhere is string

@@ -51,7 +51,7 @@ func (r *PollRepository) DeletePoll(id string) error {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("testPoll not found")
+		return fmt.Errorf("poll not found")
 	}
 	return nil
 }

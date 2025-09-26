@@ -142,5 +142,28 @@ func TestPatchPollHandler(t *testing.T) {
 }
 
 func TestDeletePollHandler(t *testing.T) {
+	router := setupRouter(t)
 
+	// first create
+	createBody := []byte(`{
+		"title": "to be deleted",
+		"options": [{"text": "x"}, {"text": "y"}]
+	}`)
+	createReq, _ := http.NewRequest("POST", "/polls", bytes.NewBuffer(createBody))
+	createReq.Header.Set("Content-Type", "application/json")
+	createW := httptest.NewRecorder()
+	router.ServeHTTP(createW, createReq)
+	require.Equal(t, http.StatusOK, createW.Code)
+
+	// then delete
+	deleteReq, _ := http.NewRequest("DELETE", "/polls/1", nil)
+	deleteW := httptest.NewRecorder()
+	router.ServeHTTP(deleteW, deleteReq)
+	require.Equal(t, http.StatusOK, deleteW.Code)
+
+	// then check
+	getReq, _ := http.NewRequest("GET", "/polls/1", nil)
+	getW := httptest.NewRecorder()
+	router.ServeHTTP(getW, getReq)
+	require.Equal(t, http.StatusBadRequest, getW.Code)
 }

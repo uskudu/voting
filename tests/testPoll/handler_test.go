@@ -21,9 +21,9 @@ func setupRouter(t *testing.T) *gin.Engine {
 	r := gin.Default()
 	r.POST("/polls", h.PostPoll)
 	r.GET("/polls", h.GetPolls)
-	r.GET("/poll/:id", h.GetPoll)
-	r.PATCH("/poll/:id", h.PatchPoll)
-	r.DELETE("/poll/:id", h.DeletePoll)
+	r.GET("/polls/:id", h.GetPoll)
+	r.PATCH("/polls/:id", h.PatchPoll)
+	r.DELETE("/polls/:id", h.DeletePoll)
 	return r
 }
 
@@ -98,16 +98,49 @@ func TestGetPollHandler(t *testing.T) {
 
 	// then get
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/poll/1", nil)
+	req, _ := http.NewRequest("GET", "/polls/1", nil)
 	router.ServeHTTP(w, req)
 	require.Equal(t, http.StatusOK, w.Code)
 	require.Contains(t, w.Body.String(), "test poll")
 	require.Contains(t, w.Body.String(), "\"text\":\"a\"")
 	require.Contains(t, w.Body.String(), "\"text\":\"b\"")
 }
-func TestPatchPollHandler(t *testing.T) {
 
+func TestPatchPollHandler(t *testing.T) {
+	router := setupRouter(t)
+
+	// first create
+	createBody := []byte(`{
+		"title": "old title",
+		"options": [{"text": "old a"}, {"text": "old b"}]
+	}`)
+	createReq, _ := http.NewRequest("POST", "/polls", bytes.NewBuffer(createBody))
+	createReq.Header.Set("Content-Type", "application/json")
+	createW := httptest.NewRecorder()
+	router.ServeHTTP(createW, createReq)
+	require.Equal(t, http.StatusOK, createW.Code)
+
+	// then patch
+	patchBody := []byte(`{
+		"title": "updated title",
+		"options": [{"text": "updated a"}, {"text": "updated b"}, {"text": "new c"}]
+	}`)
+	patchReq, _ := http.NewRequest("PATCH", "/polls/1", bytes.NewBuffer(patchBody))
+	patchReq.Header.Set("Content-Type", "application/json")
+	patchW := httptest.NewRecorder()
+	router.ServeHTTP(patchW, patchReq)
+	require.Equal(t, http.StatusOK, patchW.Code)
+
+	// then check
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/polls/1", nil)
+	router.ServeHTTP(w, req)
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Contains(t, w.Body.String(), "updated title")
+	require.Contains(t, w.Body.String(), "updated a")
+	require.Contains(t, w.Body.String(), "new c")
 }
+
 func TestDeletePollHandler(t *testing.T) {
 
 }

@@ -21,11 +21,11 @@ func main() {
 
 	r := gin.Default()
 
-	r.POST("/poll", pollHandlers.PostPoll)
+	r.POST("/polls", pollHandlers.PostPoll)
 	r.GET("/polls", pollHandlers.GetPolls)
-	r.GET("/poll/:id", pollHandlers.GetPoll)
-	r.PATCH("/poll/:id", pollHandlers.PatchPoll)
-	r.DELETE("/poll/:id", pollHandlers.DeletePoll)
+	r.GET("/polls/:id", pollHandlers.GetPoll)
+	r.PATCH("/polls/:id", pollHandlers.PatchPoll)
+	r.DELETE("/polls/:id", pollHandlers.DeletePoll)
 
 	r.Run(":8080")
 }

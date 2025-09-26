@@ -2,6 +2,7 @@ package testPoll
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -48,12 +49,39 @@ func TestPostPollHandler(t *testing.T) {
 
 func TestGetPollsHandler(t *testing.T) {
 	router := setupRouter(t)
+
+	// first set
+	createBody := []byte(`{
+		"title": "test poll 1",
+		"options": [{"text": "a"}, {"text": "b"}]
+	}`)
+	createReq, _ := http.NewRequest("POST", "/polls", bytes.NewBuffer(createBody))
+	createReq.Header.Set("Content-Type", "application/json")
+	createW := httptest.NewRecorder()
+	router.ServeHTTP(createW, createReq)
+	require.Equal(t, http.StatusOK, createW.Code)
+
+	createBody = []byte(`{
+		"title": "test poll 2",
+		"options": [{"text": "c"}, {"text": "d"}]
+	}`)
+	createReq, _ = http.NewRequest("POST", "/polls", bytes.NewBuffer(createBody))
+	createReq.Header.Set("Content-Type", "application/json")
+	createW = httptest.NewRecorder()
+	router.ServeHTTP(createW, createReq)
+	require.Equal(t, http.StatusOK, createW.Code)
+
+	// now get
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/polls", nil)
 	router.ServeHTTP(w, req)
 
 	require.Equal(t, http.StatusOK, w.Code)
-	require.Contains(t, w.Body.String(), "[]")
+	require.Contains(t, w.Body.String(), "test poll 1")
+	require.Contains(t, w.Body.String(), "\"text\":\"a\"")
+	require.Contains(t, w.Body.String(), "test poll 2")
+	require.Contains(t, w.Body.String(), "\"text\":\"d\"")
+	fmt.Println(w.Body.String())
 }
 
 func TestGetPollHandler(t *testing.T) {

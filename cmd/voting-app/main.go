@@ -40,6 +40,9 @@ func main() {
 
 	r.POST("/users", userHandler.PostUser)
 	r.GET("/users", userHandler.GetUsers)
+	r.GET("/users/:id", userHandler.GetUser)
+	r.PATCH("/users/:id", userHandler.PatchUser)
+	r.DELETE("/users/:id", userHandler.DeleteUser)
 
 	r.Run(":8080")
 }

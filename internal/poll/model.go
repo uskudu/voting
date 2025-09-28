@@ -3,6 +3,7 @@ package poll
 type Poll struct {
 	ID      int      `gorm:"primaryKey;autoIncrement" json:"id"`
 	Title   string   `json:"title"`
+	UserID  int      `gorm:"index" json:"-"`
 	Options []Option `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"options"`
 }
 

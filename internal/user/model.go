@@ -5,5 +5,5 @@ import "voting/internal/poll"
 type User struct {
 	ID       int         `gorm:"primaryKey;autoIncrement" json:"id"`
 	Username string      `json:"username"`
-	Polls    []poll.Poll `json:"polls"`
+	Polls    []poll.Poll `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"polls"`
 }

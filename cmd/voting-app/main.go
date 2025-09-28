@@ -4,8 +4,14 @@ import (
 	"voting/initializers"
 	"voting/internal/db"
 	"voting/internal/poll"
+	"voting/internal/user"
 
 	"github.com/gin-gonic/gin"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "voting/docs"
 )
 
 func main() {
@@ -19,13 +25,21 @@ func main() {
 	pollService := poll.NewPollService(pollRepo)
 	pollHandlers := poll.NewPollHandler(pollService)
 
+	userRepo := user.NewUserRepository(database)
+	userService := user.NewUserService(userRepo)
+	userHandler := user.NewUserHandler(userService)
+
 	r := gin.Default()
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.POST("/polls", pollHandlers.PostPoll)
 	r.GET("/polls", pollHandlers.GetPolls)
 	r.GET("/polls/:id", pollHandlers.GetPoll)
 	r.PATCH("/polls/:id", pollHandlers.PatchPoll)
 	r.DELETE("/polls/:id", pollHandlers.DeletePoll)
+
+	r.POST("/users", userHandler.PostUser)
+	r.GET("/users", userHandler.GetUsers)
 
 	r.Run(":8080")
 }

@@ -1,4 +1,341 @@
+basePath: /
+definitions:
+  poll.Option:
+    properties:
+      id:
+        type: integer
+      text:
+        type: string
+      votes:
+        type: integer
+    type: object
+  poll.Poll:
+    properties:
+      id:
+        type: integer
+      options:
+        items:
+          $ref: '#/definitions/poll.Option'
+        type: array
+      title:
+        type: string
+    type: object
+  user.User:
+    properties:
+      id:
+        type: integer
+      polls:
+        items:
+          $ref: '#/definitions/poll.Poll'
+        type: array
+      username:
+        type: string
+    type: object
+host: localhost:8080
 info:
-  contact: {}
-paths: {}
+  contact:
+    email: support@voting.local
+    name: API Support
+  description: API for polls and users management
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Voting API
+  version: "1.0"
+paths:
+  /polls:
+    get:
+      description: Retrieve all polls
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/poll.Poll'
+            type: array
+        "500":
+          description: could not get polls
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all polls
+      tags:
+      - polls
+    post:
+      consumes:
+      - application/json
+      description: Create a new poll with title and options
+      parameters:
+      - description: Poll object
+        in: body
+        name: poll
+        required: true
+        schema:
+          $ref: '#/definitions/poll.Poll'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: poll created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: failed creating poll
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new poll
+      tags:
+      - polls
+  /polls/{id}:
+    delete:
+      description: Delete poll by ID
+      parameters:
+      - description: Poll ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: poll deleted
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a poll
+      tags:
+      - polls
+    get:
+      description: Retrieve a single poll by its ID
+      parameters:
+      - description: Poll ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/poll.Poll'
+        "400":
+          description: invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get poll by ID
+      tags:
+      - polls
+    patch:
+      consumes:
+      - application/json
+      description: Update poll title or options by ID
+      parameters:
+      - description: Poll ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Poll object
+        in: body
+        name: poll
+        required: true
+        schema:
+          $ref: '#/definitions/poll.Poll'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: poll updated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: could not update poll
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a poll
+      tags:
+      - polls
+  /users:
+    get:
+      description: Retrieve all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/user.User'
+            type: array
+        "500":
+          description: could not get users
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with username
+      parameters:
+      - description: User object
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/user.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: failed creating user
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: Delete user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user deleted
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a user
+      tags:
+      - users
+    get:
+      description: Retrieve a single user by its ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+        "400":
+          description: invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user by ID
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      description: Update username by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User object
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/user.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user updated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: could not update user
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a user
+      tags:
+      - users
 swagger: "2.0"

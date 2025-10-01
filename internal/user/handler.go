@@ -14,8 +14,19 @@ func NewUserHandler(s ServiceIface) *Handler {
 	return &Handler{service: s}
 }
 
+// PostUser godoc
+// @Summary Create a new user
+// @Description Create a new user with username
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body User true "User object"
+// @Success 200 {object} map[string]string "user created"
+// @Failure 400 {object} map[string]string "invalid request"
+// @Failure 500 {object} map[string]string "failed creating user"
+// @Router /users [post]
 func (h *Handler) PostUser(c *gin.Context) {
-	var req = User{}
+	var req CreateUserRequest
 	if err := c.Bind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
@@ -27,6 +38,14 @@ func (h *Handler) PostUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "user created"})
 }
 
+// GetUsers godoc
+// @Summary Get all users
+// @Description Retrieve all users
+// @Tags users
+// @Produce json
+// @Success 200 {array} User
+// @Failure 500 {object} map[string]string "could not get users"
+// @Router /users [get]
 func (h *Handler) GetUsers(c *gin.Context) {
 	users, err := h.service.GetUsers()
 	if err != nil {
@@ -36,6 +55,15 @@ func (h *Handler) GetUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
+// GetUser godoc
+// @Summary Get user by ID
+// @Description Retrieve a single user by its ID
+// @Tags users
+// @Produce json
+// @Param id path string true "User ID"
+// @Success 200 {object} User
+// @Failure 400 {object} map[string]string "invalid request"
+// @Router /users/{id} [get]
 func (h *Handler) GetUser(c *gin.Context) {
 	id := c.Param("id")
 	user, err := h.service.GetUserByID(id)
@@ -46,6 +74,18 @@ func (h *Handler) GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// PatchUser godoc
+// @Summary Update a user
+// @Description Update username by ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path string true "User ID"
+// @Param user body User true "User object"
+// @Success 200 {object} map[string]string "user updated"
+// @Failure 400 {object} map[string]string "invalid request"
+// @Failure 500 {object} map[string]string "could not update user"
+// @Router /users/{id} [patch]
 func (h *Handler) PatchUser(c *gin.Context) {
 	id := c.Param("id")
 	var req struct {
@@ -63,6 +103,15 @@ func (h *Handler) PatchUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "user updated"})
 }
 
+// DeleteUser godoc
+// @Summary Delete a user
+// @Description Delete user by ID
+// @Tags users
+// @Produce json
+// @Param id path string true "User ID"
+// @Success 200 {object} map[string]string "user deleted"
+// @Failure 400 {object} map[string]string "invalid request"
+// @Router /users/{id} [delete]
 func (h *Handler) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
 	if err := h.service.DeleteUser(id); err != nil {

@@ -14,6 +14,19 @@ import (
 	_ "voting/docs"
 )
 
+// @title Voting API
+// @version 1.0
+// @description API for polls and users management
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.email support@voting.local
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /
 func main() {
 	initializers.LoadEnvVars()
 	database, err := db.Init()

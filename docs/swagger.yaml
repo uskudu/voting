@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  poll.CreatePollRequest:
+    properties:
+      options:
+        items:
+          $ref: '#/definitions/poll.Option'
+        type: array
+      title:
+        type: string
+    type: object
   poll.Option:
     properties:
       id:
@@ -19,6 +28,13 @@ definitions:
         type: array
       title:
         type: string
+    type: object
+  user.CreateUserRequest:
+    properties:
+      username:
+        type: string
+    required:
+    - username
     type: object
   user.User:
     properties:
@@ -70,12 +86,12 @@ paths:
       - application/json
       description: Create a new poll with title and options
       parameters:
-      - description: Poll object
+      - description: Poll user input
         in: body
         name: poll
         required: true
         schema:
-          $ref: '#/definitions/poll.Poll'
+          $ref: '#/definitions/poll.CreatePollRequest'
       produces:
       - application/json
       responses:
@@ -217,12 +233,12 @@ paths:
       - application/json
       description: Create a new user with username
       parameters:
-      - description: User object
+      - description: User input
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/user.User'
+          $ref: '#/definitions/user.CreateUserRequest'
       produces:
       - application/json
       responses:

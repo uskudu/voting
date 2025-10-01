@@ -20,13 +20,13 @@ func NewPollHandler(s ServiceIface) *Handler {
 // @Tags polls
 // @Accept json
 // @Produce json
-// @Param poll body Poll true "Poll object"
+// @Param poll body poll.CreatePollRequest true "Poll user input"
 // @Success 200 {object} map[string]string "poll created"
 // @Failure 400 {object} map[string]string "invalid request"
 // @Failure 500 {object} map[string]string "failed creating poll"
 // @Router /polls [post]
 func (h *Handler) PostPoll(c *gin.Context) {
-	var req = Poll{}
+	var req CreatePollRequest
 	if err := c.Bind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return

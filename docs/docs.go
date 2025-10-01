@@ -68,12 +68,12 @@ const docTemplate = `{
                 "summary": "Create a new poll",
                 "parameters": [
                     {
-                        "description": "Poll object",
+                        "description": "Poll user input",
                         "name": "poll",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poll.Poll"
+                            "$ref": "#/definitions/poll.CreatePollRequest"
                         }
                     }
                 ],
@@ -290,12 +290,12 @@ const docTemplate = `{
                 "summary": "Create a new user",
                 "parameters": [
                     {
-                        "description": "User object",
+                        "description": "User input",
                         "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/user.User"
+                            "$ref": "#/definitions/user.CreateUserRequest"
                         }
                     }
                 ],
@@ -469,6 +469,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "poll.CreatePollRequest": {
+            "type": "object",
+            "properties": {
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/poll.Option"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "poll.Option": {
             "type": "object",
             "properties": {
@@ -496,6 +510,17 @@ const docTemplate = `{
                     }
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "username"
+            ],
+            "properties": {
+                "username": {
                     "type": "string"
                 }
             }

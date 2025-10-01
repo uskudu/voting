@@ -20,7 +20,7 @@ func NewUserHandler(s ServiceIface) *Handler {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param user body User true "User object"
+// @Param user body user.CreateUserRequest true "User input"
 // @Success 200 {object} map[string]string "user created"
 // @Failure 400 {object} map[string]string "invalid request"
 // @Failure 500 {object} map[string]string "failed creating user"

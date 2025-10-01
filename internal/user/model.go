@@ -11,3 +11,7 @@ type User struct {
 type CreateUserRequest struct {
 	Username string `json:"username" binding:"required"`
 }
+
+type PatchUserRequest struct {
+	Username string `json:"username"`
+}

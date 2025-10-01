@@ -24,15 +24,19 @@ func (s *userService) CreateUser(username string) error {
 	}
 	return nil
 }
+
 func (s *userService) GetUsers() ([]User, error) {
 	return s.repo.GetUsers()
 }
+
 func (s *userService) GetUserByID(id string) (User, error) {
 	return s.repo.GetUserByID(id)
 }
+
 func (s *userService) UpdateUser(id, newUsername string) error {
 	return s.repo.UpdateUser(id, newUsername)
 }
+
 func (s *userService) DeleteUser(id string) error {
 	return s.repo.DeleteUser(id)
 }

@@ -1,6 +1,10 @@
 package user
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+
+	"gorm.io/gorm"
+)
 
 type RepositoryIface interface {
 	CreateUser(user *User) error
@@ -27,17 +31,33 @@ func (r *UserRepository) GetUsers() ([]User, error) {
 	err := r.DB.Find(&users).Error
 	return users, err
 }
+
 func (r *UserRepository) GetUserByID(id string) (User, error) {
 	var user User
 	err := r.DB.First(&user, "id = ?", id).Error
 	return user, err
 }
+
 func (r *UserRepository) UpdateUser(id, newUsername string) error {
-	return r.DB.Model(&User{}).
+	result := r.DB.Model(&User{}).
 		Where("id = ?", id).
-		Update("username", newUsername).Error
+		Update("username", newUsername)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("user not found")
+	}
+	return nil
 }
 
 func (r *UserRepository) DeleteUser(id string) error {
-	return r.DB.Delete(&User{}, id).Error
+	result := r.DB.Delete(&User{}, "id = ?", id)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("user not found")
+	}
+	return nil
 }

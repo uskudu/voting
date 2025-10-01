@@ -20,18 +20,24 @@ func NewPollHandler(s ServiceIface) *Handler {
 // @Tags polls
 // @Accept json
 // @Produce json
-// @Param poll body poll.CreatePollRequest true "Poll user input"
+// @Param poll body poll.CreateOrPatchPollRequest true "Poll user input"
 // @Success 200 {object} map[string]string "poll created"
 // @Failure 400 {object} map[string]string "invalid request"
 // @Failure 500 {object} map[string]string "failed creating poll"
 // @Router /polls [post]
 func (h *Handler) PostPoll(c *gin.Context) {
-	var req CreatePollRequest
+	var req CreateOrPatchPollRequest
 	if err := c.Bind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
-	if err := h.service.CreatePoll(req.Title, req.Options); err != nil {
+	options := make([]Option, len(req.Options))
+	for i, o := range req.Options {
+		options[i] = Option{
+			Text: o.Text,
+		}
+	}
+	if err := h.service.CreatePoll(req.Title, options); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"failed creating poll": err.Error()})
 		return
 	}
@@ -62,13 +68,13 @@ func (h *Handler) GetPolls(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Poll ID"
 // @Success 200 {object} Poll
-// @Failure 400 {object} map[string]string "invalid request"
+// @Failure 404 {object} map[string]string "poll not found"
 // @Router /polls/{id} [get]
 func (h *Handler) GetPoll(c *gin.Context) {
 	id := c.Param("id")
 	poll, err := h.service.GetPollByID(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "poll not found"})
 		return
 	}
 	c.JSON(http.StatusOK, poll)
@@ -81,25 +87,35 @@ func (h *Handler) GetPoll(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Poll ID"
-// @Param poll body Poll true "Poll object"
+// @Param poll body poll.CreateOrPatchPollRequest true "CreateOrPatchPollRequest user input"
 // @Success 200 {object} map[string]string "poll updated"
-// @Failure 400 {object} map[string]string "invalid request"
+// @Failure 404 {object} map[string]string "poll not found"
 // @Failure 500 {object} map[string]string "could not update poll"
 // @Router /polls/{id} [patch]
 func (h *Handler) PatchPoll(c *gin.Context) {
 	id := c.Param("id")
-	var poll Poll
-	if err := c.Bind(&poll); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+	var req CreateOrPatchPollRequest
+	if err := c.Bind(&req); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "poll not found"})
 		return
 	}
-	err := h.service.UpdatePoll(id, poll)
+	options := make([]Option, len(req.Options))
+	for i, o := range req.Options {
+		options[i] = Option{
+			Text: o.Text,
+		}
+	}
+
+	pollToUpdate := Poll{
+		Title:   req.Title,
+		Options: options,
+	}
+	err := h.service.UpdatePoll(id, pollToUpdate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update poll"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "poll updated"})
-
 }
 
 // DeletePoll godoc
@@ -109,12 +125,12 @@ func (h *Handler) PatchPoll(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Poll ID"
 // @Success 200 {object} map[string]string "poll deleted"
-// @Failure 400 {object} map[string]string "invalid request"
+// @Failure 404 {object} map[string]string "poll not found"
 // @Router /polls/{id} [delete]
 func (h *Handler) DeletePoll(c *gin.Context) {
 	id := c.Param("id")
 	if err := h.service.DeletePoll(id); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "poll not found"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "poll deleted"})

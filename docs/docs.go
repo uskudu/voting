@@ -73,7 +73,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poll.CreatePollRequest"
+                            "$ref": "#/definitions/poll.CreateOrPatchPollRequest"
                         }
                     }
                 ],
@@ -134,8 +134,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/poll.Poll"
                         }
                     },
-                    "400": {
-                        "description": "invalid request",
+                    "404": {
+                        "description": "poll not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -173,8 +173,8 @@ const docTemplate = `{
                             }
                         }
                     },
-                    "400": {
-                        "description": "invalid request",
+                    "404": {
+                        "description": "poll not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -205,12 +205,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Poll object",
+                        "description": "CreateOrPatchPollRequest user input",
                         "name": "poll",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poll.Poll"
+                            "$ref": "#/definitions/poll.CreateOrPatchPollRequest"
                         }
                     }
                 ],
@@ -224,8 +224,8 @@ const docTemplate = `{
                             }
                         }
                     },
-                    "400": {
-                        "description": "invalid request",
+                    "404": {
+                        "description": "poll not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -356,8 +356,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/user.User"
                         }
                     },
-                    "400": {
-                        "description": "invalid request",
+                    "404": {
+                        "description": "user not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -395,8 +395,8 @@ const docTemplate = `{
                             }
                         }
                     },
-                    "400": {
-                        "description": "invalid request",
+                    "404": {
+                        "description": "user not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -427,12 +427,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "User object",
+                        "description": "PatchUserRequest user input",
                         "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/user.User"
+                            "$ref": "#/definitions/user.PatchUserRequest"
                         }
                     }
                 ],
@@ -446,8 +446,8 @@ const docTemplate = `{
                             }
                         }
                     },
-                    "400": {
-                        "description": "invalid request",
+                    "404": {
+                        "description": "user not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -469,13 +469,21 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "poll.CreatePollRequest": {
+        "poll.CreateOptionRequest": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "poll.CreateOrPatchPollRequest": {
             "type": "object",
             "properties": {
                 "options": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poll.Option"
+                        "$ref": "#/definitions/poll.CreateOptionRequest"
                     }
                 },
                 "title": {
@@ -519,6 +527,14 @@ const docTemplate = `{
             "required": [
                 "username"
             ],
+            "properties": {
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.PatchUserRequest": {
+            "type": "object",
             "properties": {
                 "username": {
                     "type": "string"

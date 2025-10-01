@@ -1,10 +1,15 @@
 basePath: /
 definitions:
-  poll.CreatePollRequest:
+  poll.CreateOptionRequest:
+    properties:
+      text:
+        type: string
+    type: object
+  poll.CreateOrPatchPollRequest:
     properties:
       options:
         items:
-          $ref: '#/definitions/poll.Option'
+          $ref: '#/definitions/poll.CreateOptionRequest'
         type: array
       title:
         type: string
@@ -35,6 +40,11 @@ definitions:
         type: string
     required:
     - username
+    type: object
+  user.PatchUserRequest:
+    properties:
+      username:
+        type: string
     type: object
   user.User:
     properties:
@@ -91,7 +101,7 @@ paths:
         name: poll
         required: true
         schema:
-          $ref: '#/definitions/poll.CreatePollRequest'
+          $ref: '#/definitions/poll.CreateOrPatchPollRequest'
       produces:
       - application/json
       responses:
@@ -134,8 +144,8 @@ paths:
             additionalProperties:
               type: string
             type: object
-        "400":
-          description: invalid request
+        "404":
+          description: poll not found
           schema:
             additionalProperties:
               type: string
@@ -158,8 +168,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/poll.Poll'
-        "400":
-          description: invalid request
+        "404":
+          description: poll not found
           schema:
             additionalProperties:
               type: string
@@ -177,12 +187,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Poll object
+      - description: CreateOrPatchPollRequest user input
         in: body
         name: poll
         required: true
         schema:
-          $ref: '#/definitions/poll.Poll'
+          $ref: '#/definitions/poll.CreateOrPatchPollRequest'
       produces:
       - application/json
       responses:
@@ -192,8 +202,8 @@ paths:
             additionalProperties:
               type: string
             type: object
-        "400":
-          description: invalid request
+        "404":
+          description: poll not found
           schema:
             additionalProperties:
               type: string
@@ -281,8 +291,8 @@ paths:
             additionalProperties:
               type: string
             type: object
-        "400":
-          description: invalid request
+        "404":
+          description: user not found
           schema:
             additionalProperties:
               type: string
@@ -305,8 +315,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/user.User'
-        "400":
-          description: invalid request
+        "404":
+          description: user not found
           schema:
             additionalProperties:
               type: string
@@ -324,12 +334,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: User object
+      - description: PatchUserRequest user input
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/user.User'
+          $ref: '#/definitions/user.PatchUserRequest'
       produces:
       - application/json
       responses:
@@ -339,8 +349,8 @@ paths:
             additionalProperties:
               type: string
             type: object
-        "400":
-          description: invalid request
+        "404":
+          description: user not found
           schema:
             additionalProperties:
               type: string

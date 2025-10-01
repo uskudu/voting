@@ -62,13 +62,13 @@ func (h *Handler) GetUsers(c *gin.Context) {
 // @Produce json
 // @Param id path string true "User ID"
 // @Success 200 {object} User
-// @Failure 400 {object} map[string]string "invalid request"
+// @Failure 404 {object} map[string]string "user not found"
 // @Router /users/{id} [get]
 func (h *Handler) GetUser(c *gin.Context) {
 	id := c.Param("id")
 	user, err := h.service.GetUserByID(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
 	c.JSON(http.StatusOK, user)
@@ -81,22 +81,24 @@ func (h *Handler) GetUser(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "User ID"
-// @Param user body User true "User object"
+// @Param user body user.PatchUserRequest true "PatchUserRequest user input"
 // @Success 200 {object} map[string]string "user updated"
-// @Failure 400 {object} map[string]string "invalid request"
+// @Failure 404 {object} map[string]string "user not found"
 // @Failure 500 {object} map[string]string "could not update user"
 // @Router /users/{id} [patch]
 func (h *Handler) PatchUser(c *gin.Context) {
 	id := c.Param("id")
-	var req struct {
-		Username string `json:"username"`
-	}
+	var req PatchUserRequest
 	if err := c.Bind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
 	err := h.service.UpdateUser(id, req.Username)
 	if err != nil {
+		if err.Error() == "user not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update user"})
 		return
 	}
@@ -110,12 +112,12 @@ func (h *Handler) PatchUser(c *gin.Context) {
 // @Produce json
 // @Param id path string true "User ID"
 // @Success 200 {object} map[string]string "user deleted"
-// @Failure 400 {object} map[string]string "invalid request"
+// @Failure 404 {object} map[string]string "user not found"
 // @Router /users/{id} [delete]
 func (h *Handler) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
 	if err := h.service.DeleteUser(id); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "user deleted"})

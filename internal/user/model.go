@@ -10,7 +10,7 @@ type User struct {
 	Polls    []poll.Poll `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"polls"`
 }
 
-type CreateUserRequest struct {
+type CreateOrLoginUserRequest struct {
 	Username string `json:"username" binding:"required"`
 }
 

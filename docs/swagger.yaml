@@ -34,7 +34,7 @@ definitions:
       title:
         type: string
     type: object
-  user.CreateUserRequest:
+  user.CreateOrLoginUserRequest:
     properties:
       username:
         type: string
@@ -70,6 +70,42 @@ info:
   title: Voting API
   version: "1.0"
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user by username and returns a JWT token in a cookie
+      parameters:
+      - description: Login request payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/user.CreateOrLoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: login successful
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: failed to create jwt token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Authenticate user and create JWT
+      tags:
+      - auth
   /polls:
     get:
       description: Retrieve all polls
@@ -248,7 +284,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/user.CreateUserRequest'
+          $ref: '#/definitions/user.CreateOrLoginUserRequest'
       produces:
       - application/json
       responses:
@@ -364,4 +400,26 @@ paths:
       summary: Update a user
       tags:
       - users
+  /validate:
+    get:
+      description: Returns the authenticated user info extracted from the JWT token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User info
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Validate JWT and return user info
+      tags:
+      - auth
 swagger: "2.0"

@@ -2,14 +2,14 @@ package testUser
 
 import (
 	"testing"
-	"voting/internal/user/crud"
+	"voting/internal/user"
 
 	"github.com/stretchr/testify/require"
 )
 
-func setupService(t *testing.T) crud.ServiceIface {
+func setupService(t *testing.T) user.ServiceIface {
 	repo := setupRepo(t)
-	return crud.NewUserService(repo)
+	return user.NewUserService(repo)
 }
 
 var username = "test user"

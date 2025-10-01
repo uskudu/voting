@@ -3,8 +3,9 @@ package main
 import (
 	"voting/initializers"
 	"voting/internal/db"
+	"voting/internal/middleware"
 	"voting/internal/poll"
-	"voting/internal/user/crud"
+	"voting/internal/user"
 
 	"github.com/gin-gonic/gin"
 
@@ -38,9 +39,9 @@ func main() {
 	pollService := poll.NewPollService(pollRepo)
 	pollHandlers := poll.NewPollHandler(pollService)
 
-	userRepo := crud.NewUserRepository(database)
-	userService := crud.NewUserService(userRepo)
-	userHandler := crud.NewUserHandler(userService)
+	userRepo := user.NewUserRepository(database)
+	userService := user.NewUserService(userRepo)
+	userHandler := user.NewUserHandler(userService)
 
 	r := gin.Default()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -56,6 +57,9 @@ func main() {
 	r.GET("/users/:id", userHandler.GetUser)
 	r.PATCH("/users/:id", userHandler.PatchUser)
 	r.DELETE("/users/:id", userHandler.DeleteUser)
+
+	r.POST("/login", userHandler.Login)
+	r.GET("/validate", middleware.RequireAuth, userHandler.Validate)
 
 	r.Run(":8080")
 }

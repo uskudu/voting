@@ -43,10 +43,11 @@ func RequireAuth(c *gin.Context) {
 	}
 	// find user with token sub
 	var usr user.User
-	if err = db.DB.First(&usr, claims["sub"]).Error; err != nil {
+	if err = db.DB.First(&usr, "id = ?", claims["sub"]).Error; err != nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
+
 	if _, err = uuid.Parse(usr.ID); err != nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
@@ -54,5 +55,4 @@ func RequireAuth(c *gin.Context) {
 	// attach to req
 	c.Set("user", usr)
 	c.Next()
-
 }

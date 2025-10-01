@@ -1,10 +1,12 @@
-package crud
+package user
 
 import (
 	"net/http"
-	"voting/internal/user"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type Handler struct {
@@ -21,14 +23,14 @@ func NewUserHandler(s ServiceIface) *Handler {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param user body user.CreateUserRequest true "User input"
+// @Param user body user.CreateOrLoginUserRequest true "User input"
 // @Success 200 {object} map[string]string "user created"
 // @Failure 400 {object} map[string]string "invalid request"
 // @Failure 500 {object} map[string]string "failed creating user"
 // @Router /users [post]
 func (h *Handler) PostUser(c *gin.Context) {
-	var req user.CreateUserRequest
-	if err := c.Bind(&req); err != nil {
+	var req CreateOrLoginUserRequest
+	if c.Bind(&req) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
@@ -37,6 +39,57 @@ func (h *Handler) PostUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "user created"})
+}
+
+// Login godoc
+// @Summary Authenticate user and create JWT
+// @Description Authenticates a user by username and returns a JWT token in a cookie
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body user.CreateOrLoginUserRequest true "Login request payload"
+// @Success 200 {object} map[string]string "login successful"
+// @Failure 400 {object} map[string]string "invalid request"
+// @Failure 500 {object} map[string]string "failed to create jwt token"
+// @Router /login [post]
+func (h *Handler) Login(c *gin.Context) {
+	var req CreateOrLoginUserRequest
+	if c.Bind(&req) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+	got, err := h.service.Authenticate(req.Username)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// set jwt token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": got.ID,
+		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
+	})
+	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create jwt token"})
+		return
+	}
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("Authorization", tokenString, 3600*42*30, "", "", false, true)
+	c.JSON(http.StatusOK, gin.H{"message": "login successful"})
+}
+
+// Validate godoc
+// @Summary      Validate JWT and return user info
+// @Description  Returns the authenticated user info extracted from the JWT token
+// @Tags         auth
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}  "User info"
+// @Failure      401  {object}  map[string]string       "Unauthorized"
+// @Router       /validate [get]
+// @Security     ApiKeyAuth
+func (h *Handler) Validate(c *gin.Context) {
+	user, _ := c.Get("user")
+	c.JSON(http.StatusOK, gin.H{"message": user})
 }
 
 // GetUsers godoc
@@ -89,7 +142,7 @@ func (h *Handler) GetUser(c *gin.Context) {
 // @Router /users/{id} [patch]
 func (h *Handler) PatchUser(c *gin.Context) {
 	id := c.Param("id")
-	var req user.PatchUserRequest
+	var req PatchUserRequest
 	if err := c.Bind(&req); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return

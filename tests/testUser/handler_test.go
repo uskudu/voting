@@ -5,15 +5,15 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"voting/internal/user/crud"
+	"voting/internal/user"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )
 
-func setupHandler(t *testing.T) crud.Handler {
+func setupHandler(t *testing.T) user.Handler {
 	service := setupService(t)
-	return *crud.NewUserHandler(service)
+	return *user.NewUserHandler(service)
 }
 
 func setupRouter(t *testing.T) *gin.Engine {

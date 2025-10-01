@@ -10,19 +10,19 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
+var DB *gorm.DB
 
 func Init() (*gorm.DB, error) {
 	dsn := os.Getenv("DB")
 	var err error
 
-	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("couldnt connect to db: %v", err)
+		log.Fatalf("couldnt connect to DB: %v", err)
 	}
 
-	if err := db.AutoMigrate(&user.User{}, &poll.Poll{}, &poll.Option{}); err != nil {
+	if err := DB.AutoMigrate(&user.User{}, &poll.Poll{}, &poll.Option{}); err != nil {
 		log.Fatalf("couldnt migrate: %v", err)
 	}
-	return db, nil
+	return DB, nil
 }

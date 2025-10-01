@@ -3,17 +3,18 @@ package testUser
 import (
 	"testing"
 	"voting/internal/user"
+	"voting/internal/user/crud"
 	"voting/tests/dbMock"
 
 	"github.com/stretchr/testify/require"
 )
 
-func setupRepo(t *testing.T) user.RepositoryIface {
+func setupRepo(t *testing.T) crud.RepositoryIface {
 	db := dbMock.SqliteMock()
 	if err := db.AutoMigrate(&user.User{}); err != nil {
 		panic(err)
 	}
-	return user.NewUserRepository(db)
+	return crud.NewUserRepository(db)
 }
 
 var u = &user.User{
@@ -30,7 +31,7 @@ func TestCreateUserRepo(t *testing.T) {
 	require.NotZero(t, u.ID, "user should have ID after creation")
 
 	var got user.User
-	err = repo.(*user.UserRepository).DB.First(&got, u.ID).Error
+	err = repo.(*crud.Repository).DB.First(&got, u.ID).Error
 
 	require.NoError(t, err)
 	require.Equal(t, "test user", got.Username)

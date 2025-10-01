@@ -2,6 +2,8 @@ package poll
 
 import (
 	"fmt"
+
+	"github.com/google/uuid"
 )
 
 type ServiceIface interface {
@@ -22,6 +24,7 @@ func NewPollService(r RepositoryIface) ServiceIface {
 
 func (s *pollService) CreatePoll(title string, options []Option) error {
 	poll := Poll{
+		ID:    uuid.NewString(),
 		Title: title,
 	}
 	for _, opt := range options {

@@ -1,9 +1,9 @@
 package poll
 
 type Poll struct {
-	ID      int      `gorm:"primaryKey;autoIncrement" json:"id"`
+	ID      string   `gorm:"primaryKey" json:"id"`
 	Title   string   `json:"title"`
-	UserID  int      `gorm:"index" json:"-"`
+	UserID  string   `gorm:"index" json:"-"`
 	Options []Option `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"options"`
 }
 
@@ -15,7 +15,7 @@ type CreateOrPatchPollRequest struct {
 type Option struct {
 	ID     int    `gorm:"primaryKey;autoIncrement" json:"id"`
 	Text   string `json:"text"`
-	PollID int    `gorm:"index" json:"-"`
+	PollID string `gorm:"index" json:"-"`
 	Votes  int    `json:"votes"`
 }
 

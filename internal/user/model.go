@@ -1,9 +1,11 @@
 package user
 
-import "voting/internal/poll"
+import (
+	"voting/internal/poll"
+)
 
 type User struct {
-	ID       int         `gorm:"primaryKey;autoIncrement" json:"id"`
+	ID       string      `gorm:"primaryKey" json:"id"`
 	Username string      `json:"username"`
 	Polls    []poll.Poll `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"polls"`
 }

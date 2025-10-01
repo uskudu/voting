@@ -1,7 +1,8 @@
-package user
+package crud
 
 import (
 	"net/http"
+	"voting/internal/user"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,7 +27,7 @@ func NewUserHandler(s ServiceIface) *Handler {
 // @Failure 500 {object} map[string]string "failed creating user"
 // @Router /users [post]
 func (h *Handler) PostUser(c *gin.Context) {
-	var req CreateUserRequest
+	var req user.CreateUserRequest
 	if err := c.Bind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
@@ -43,7 +44,7 @@ func (h *Handler) PostUser(c *gin.Context) {
 // @Description Retrieve all users
 // @Tags users
 // @Produce json
-// @Success 200 {array} User
+// @Success 200 {array} user.User
 // @Failure 500 {object} map[string]string "could not get users"
 // @Router /users [get]
 func (h *Handler) GetUsers(c *gin.Context) {
@@ -61,17 +62,17 @@ func (h *Handler) GetUsers(c *gin.Context) {
 // @Tags users
 // @Produce json
 // @Param id path string true "User ID"
-// @Success 200 {object} User
+// @Success 200 {object} user.User
 // @Failure 404 {object} map[string]string "user not found"
 // @Router /users/{id} [get]
 func (h *Handler) GetUser(c *gin.Context) {
 	id := c.Param("id")
-	user, err := h.service.GetUserByID(id)
+	got, err := h.service.GetUserByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, got)
 }
 
 // PatchUser godoc
@@ -88,7 +89,7 @@ func (h *Handler) GetUser(c *gin.Context) {
 // @Router /users/{id} [patch]
 func (h *Handler) PatchUser(c *gin.Context) {
 	id := c.Param("id")
-	var req PatchUserRequest
+	var req user.PatchUserRequest
 	if err := c.Bind(&req); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return

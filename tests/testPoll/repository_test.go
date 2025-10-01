@@ -33,7 +33,7 @@ func TestCreatePollRepo(t *testing.T) {
 	require.NotZero(t, p.ID, "poll should have ID after creation")
 
 	var got poll.Poll
-	err = repo.(*poll.PollRepository).DB.Preload("Options").First(&got, p.ID).Error
+	err = repo.(*poll.Repository).DB.Preload("Options").First(&got, p.ID).Error
 
 	require.NoError(t, err)
 	require.Equal(t, "test poll", got.Title)
@@ -61,7 +61,7 @@ func TestGetPollsRepo(t *testing.T) {
 	}
 
 	for i := range pollsToCreate {
-		err := repo.(*poll.PollRepository).DB.Create(&pollsToCreate[i]).Error
+		err := repo.(*poll.Repository).DB.Create(&pollsToCreate[i]).Error
 		require.NoError(t, err)
 	}
 

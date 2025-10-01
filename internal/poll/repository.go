@@ -14,38 +14,38 @@ type RepositoryIface interface {
 	DeletePoll(id string) error
 }
 
-type PollRepository struct {
+type Repository struct {
 	DB *gorm.DB
 }
 
 func NewPollRepository(db *gorm.DB) RepositoryIface {
-	return &PollRepository{DB: db}
+	return &Repository{DB: db}
 }
 
-func (r *PollRepository) CreatePoll(poll *Poll) error {
+func (r *Repository) CreatePoll(poll *Poll) error {
 	return r.DB.Create(&poll).Error
 }
 
-func (r *PollRepository) GetPolls() ([]Poll, error) {
+func (r *Repository) GetPolls() ([]Poll, error) {
 	var polls []Poll
 	err := r.DB.Preload("Options").Find(&polls).Error
 	return polls, err
 }
 
-func (r *PollRepository) GetPollByID(id string) (Poll, error) {
+func (r *Repository) GetPollByID(id string) (Poll, error) {
 	var poll Poll
 	err := r.DB.Preload("Options").First(&poll, "id = ?", id).Error
 	return poll, err
 }
 
-func (r *PollRepository) UpdatePoll(poll *Poll) error {
+func (r *Repository) UpdatePoll(poll *Poll) error {
 	if err := r.DB.Where("poll_id = ?", poll.ID).Delete(&Option{}).Error; err != nil {
 		return err
 	}
 	return r.DB.Session(&gorm.Session{FullSaveAssociations: true}).Save(&poll).Error
 }
 
-func (r *PollRepository) DeletePoll(id string) error {
+func (r *Repository) DeletePoll(id string) error {
 	result := r.DB.Delete(&Poll{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error

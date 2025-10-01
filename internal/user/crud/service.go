@@ -1,9 +1,15 @@
-package user
+package crud
+
+import (
+	"voting/internal/user"
+
+	"github.com/google/uuid"
+)
 
 type ServiceIface interface {
 	CreateUser(username string) error
-	GetUsers() ([]User, error)
-	GetUserByID(id string) (User, error)
+	GetUsers() ([]user.User, error)
+	GetUserByID(id string) (user.User, error)
 	UpdateUser(id, newUsername string) error
 	DeleteUser(id string) error
 }
@@ -15,21 +21,23 @@ type userService struct {
 func NewUserService(r RepositoryIface) ServiceIface {
 	return &userService{repo: r}
 }
+
 func (s *userService) CreateUser(username string) error {
-	user := User{
+	newUser := user.User{
+		ID:       uuid.NewString(),
 		Username: username,
 	}
-	if err := s.repo.CreateUser(&user); err != nil {
+	if err := s.repo.CreateUser(&newUser); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *userService) GetUsers() ([]User, error) {
+func (s *userService) GetUsers() ([]user.User, error) {
 	return s.repo.GetUsers()
 }
 
-func (s *userService) GetUserByID(id string) (User, error) {
+func (s *userService) GetUserByID(id string) (user.User, error) {
 	return s.repo.GetUserByID(id)
 }
 

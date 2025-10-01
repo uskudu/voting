@@ -26,7 +26,7 @@ definitions:
   poll.Poll:
     properties:
       id:
-        type: integer
+        type: string
       options:
         items:
           $ref: '#/definitions/poll.Option'
@@ -49,7 +49,7 @@ definitions:
   user.User:
     properties:
       id:
-        type: integer
+        type: string
       polls:
         items:
           $ref: '#/definitions/poll.Poll'

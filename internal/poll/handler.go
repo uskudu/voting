@@ -176,7 +176,7 @@ func (h *Handler) DeletePoll(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "poll not found"})
 		return
 	}
-	// validate that user which is trying to update is the creator of the poll
+	// validate that user which is trying to delete is the creator of the poll
 	if poll.UserID != userid {
 		c.JSON(http.StatusForbidden, gin.H{"error": "you are not the owner of this poll"})
 		return

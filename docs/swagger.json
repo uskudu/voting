@@ -432,6 +432,11 @@
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Delete user by ID",
                 "produces": [
                     "application/json"
@@ -471,6 +476,11 @@
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update username by ID",
                 "consumes": [
                     "application/json"

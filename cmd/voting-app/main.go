@@ -55,8 +55,8 @@ func main() {
 	r.POST("/users", userHandler.PostUser)
 	r.GET("/users", userHandler.GetUsers)
 	r.GET("/users/:id", userHandler.GetUser)
-	r.PATCH("/users/:id", userHandler.PatchUser)
-	r.DELETE("/users/:id", userHandler.DeleteUser)
+	r.PATCH("/users/:id", middleware.RequireAuth, userHandler.PatchUser)
+	r.DELETE("/users/:id", middleware.RequireAuth, userHandler.DeleteUser)
 
 	r.POST("/login", userHandler.Login)
 	r.GET("/validate", middleware.RequireAuth, userHandler.Validate)

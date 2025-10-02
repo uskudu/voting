@@ -339,6 +339,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: Delete a user
       tags:
       - users
@@ -403,6 +405,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: Update a user
       tags:
       - users

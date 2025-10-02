@@ -438,6 +438,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Delete user by ID",
                 "produces": [
                     "application/json"
@@ -477,6 +482,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update username by ID",
                 "consumes": [
                     "application/json"

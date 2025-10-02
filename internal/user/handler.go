@@ -140,6 +140,7 @@ func (h *Handler) GetUser(c *gin.Context) {
 // @Failure 404 {object} map[string]string "user not found"
 // @Failure 500 {object} map[string]string "could not update user"
 // @Router /users/{id} [patch]
+// @Security ApiKeyAuth
 func (h *Handler) PatchUser(c *gin.Context) {
 	id := c.Param("id")
 	var req PatchUserRequest
@@ -147,7 +148,27 @@ func (h *Handler) PatchUser(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
-	err := h.service.UpdateUser(id, req.Username)
+	// get user id
+	uid, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	userid := uid.(string)
+
+	// get user form db
+	usr, err := h.service.GetUserByID(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+	// validate that user which is trying to update is the owner of the account
+	if usr.ID != userid {
+		c.JSON(http.StatusForbidden, gin.H{"error": "you are not the owner of this account"})
+		return
+	}
+
+	err = h.service.UpdateUser(id, req.Username)
 	if err != nil {
 		if err.Error() == "user not found" {
 			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
@@ -168,8 +189,29 @@ func (h *Handler) PatchUser(c *gin.Context) {
 // @Success 200 {object} map[string]string "user deleted"
 // @Failure 404 {object} map[string]string "user not found"
 // @Router /users/{id} [delete]
+// @Security ApiKeyAuth
 func (h *Handler) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
+	// get user id
+	uid, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	userid := uid.(string)
+
+	// get user form db
+	usr, err := h.service.GetUserByID(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+	// validate that user which is trying to update is the owner of the account
+	if usr.ID != userid {
+		c.JSON(http.StatusForbidden, gin.H{"error": "you are not the owner of this account"})
+		return
+	}
+
 	if err := h.service.DeleteUser(id); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return

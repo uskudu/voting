@@ -110,6 +110,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Create a new poll with title and options",
                 "consumes": [
                     "application/json"

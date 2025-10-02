@@ -46,7 +46,7 @@ func main() {
 	r := gin.Default()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	r.POST("/polls", pollHandlers.PostPoll)
+	r.POST("/polls", middleware.RequireAuth, pollHandlers.PostPoll)
 	r.GET("/polls", pollHandlers.GetPolls)
 	r.GET("/polls/:id", pollHandlers.GetPoll)
 	r.PATCH("/polls/:id", pollHandlers.PatchPoll)

@@ -7,7 +7,7 @@ import (
 )
 
 type ServiceIface interface {
-	CreatePoll(title string, options []Option) error
+	CreatePoll(userid, title string, options []Option) error
 	GetPolls() ([]Poll, error)
 	GetPollByID(id string) (Poll, error)
 	UpdatePoll(id string, poll Poll) error
@@ -22,10 +22,11 @@ func NewPollService(r RepositoryIface) ServiceIface {
 	return &pollService{repo: r}
 }
 
-func (s *pollService) CreatePoll(title string, options []Option) error {
+func (s *pollService) CreatePoll(uid, title string, options []Option) error {
 	poll := Poll{
-		ID:    uuid.NewString(),
-		Title: title,
+		ID:     uuid.NewString(),
+		UserID: uid,
+		Title:  title,
 	}
 	for _, opt := range options {
 		option := Option{

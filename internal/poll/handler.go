@@ -25,7 +25,9 @@ func NewPollHandler(s ServiceIface) *Handler {
 // @Failure 400 {object} map[string]string "invalid request"
 // @Failure 500 {object} map[string]string "failed creating poll"
 // @Router /polls [post]
+// @Security ApiKeyAuth
 func (h *Handler) PostPoll(c *gin.Context) {
+	// fill poll schema
 	var req CreateOrPatchPollRequest
 	if err := c.Bind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -37,7 +39,14 @@ func (h *Handler) PostPoll(c *gin.Context) {
 			Text: o.Text,
 		}
 	}
-	if err := h.service.CreatePoll(req.Title, options); err != nil {
+	// get user id
+	uid, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	// send to service
+	if err := h.service.CreatePoll(uid.(string), req.Title, options); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"failed creating poll": err.Error()})
 		return
 	}

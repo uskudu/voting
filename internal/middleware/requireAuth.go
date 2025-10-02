@@ -5,12 +5,9 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"voting/internal/db"
-	"voting/internal/user"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
 )
 
 func RequireAuth(c *gin.Context) {
@@ -41,18 +38,13 @@ func RequireAuth(c *gin.Context) {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	// find user with token sub
-	var usr user.User
-	if err = db.DB.First(&usr, "id = ?", claims["sub"]).Error; err != nil {
+	// check user
+	userID, ok := claims["sub"].(string)
+	if !ok {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-
-	if _, err = uuid.Parse(usr.ID); err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-	// attach to req
-	c.Set("user", usr)
+	// set user
+	c.Set("userID", userID)
 	c.Next()
 }

@@ -24,6 +24,9 @@ func NewUserService(r RepositoryIface) ServiceIface {
 }
 
 func (s *Service) CreateUser(username string) error {
+	if _, err := s.repo.GetUserByUsername(username); err == nil {
+		return errors.New("username already taken")
+	}
 	newUser := User{
 		ID:       uuid.NewString(),
 		Username: username,

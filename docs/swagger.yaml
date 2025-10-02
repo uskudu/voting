@@ -318,12 +318,6 @@ paths:
   /users/{id}:
     delete:
       description: Delete user by ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -373,11 +367,6 @@ paths:
       - application/json
       description: Update username by ID
       parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
       - description: PatchUserRequest user input
         in: body
         name: user

@@ -29,7 +29,7 @@ func (r *Repository) CreateUser(user *User) error {
 
 func (r *Repository) GetUsers() ([]User, error) {
 	var users []User
-	err := r.DB.Find(&users).Error
+	err := r.DB.Preload("Polls.Options").Find(&users).Error
 	return users, err
 }
 

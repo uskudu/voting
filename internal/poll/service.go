@@ -62,12 +62,6 @@ func (s *pollService) UpdatePoll(id string, poll Poll) error {
 
 	pollFromDB.Title = poll.Title
 	pollFromDB.Options = poll.Options
-	//for _, o := range poll.Options {
-	//	pollFromDB.Options = append(pollFromDB.Options, Option{
-	//		Text:   o.Text,
-	//		PollID: pollFromDB.ID,
-	//	})
-	//}
 
 	if err := s.repo.UpdatePoll(&pollFromDB); err != nil {
 		return err

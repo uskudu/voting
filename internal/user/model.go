@@ -6,7 +6,7 @@ import (
 
 type User struct {
 	ID       string      `gorm:"primaryKey" json:"id"`
-	Username string      `json:"username"`
+	Username string      `gorm:"unique;not null" json:"username"`
 	Polls    []poll.Poll `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"polls"`
 }
 

@@ -27,6 +27,12 @@ func NewPollHandler(s ServiceIface) *Handler {
 // @Router /polls [post]
 // @Security ApiKeyAuth
 func (h *Handler) PostPoll(c *gin.Context) {
+	// validate user logged in
+	uid, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 	// fill poll schema
 	var req CreateOrPatchPollRequest
 	if err := c.Bind(&req); err != nil {
@@ -38,12 +44,6 @@ func (h *Handler) PostPoll(c *gin.Context) {
 		options[i] = Option{
 			Text: o.Text,
 		}
-	}
-	// get user id
-	uid, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
 	}
 	// send to service
 	if err := h.service.CreatePoll(uid.(string), req.Title, options); err != nil {
@@ -103,31 +103,13 @@ func (h *Handler) GetPoll(c *gin.Context) {
 // @Router /polls/{id} [patch]
 // @Security ApiKeyAuth
 func (h *Handler) PatchPoll(c *gin.Context) {
-	id := c.Param("id")
-	var req CreateOrPatchPollRequest
-	if err := c.Bind(&req); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "poll not found"})
-		return
-	}
-	options := make([]Option, len(req.Options))
-	for i, o := range req.Options {
-		options[i] = Option{
-			Text: o.Text,
-		}
-	}
-
-	pollToUpdate := Poll{
-		Title:   req.Title,
-		Options: options,
-	}
-	// get user id
+	// get user id from cookie
 	uid, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 	userid := uid.(string)
-
 	// get poll form db
 	pollID := c.Param("id")
 	poll, err := h.service.GetPollByID(pollID)
@@ -140,8 +122,23 @@ func (h *Handler) PatchPoll(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "you are not the owner of this poll"})
 		return
 	}
-
-	err = h.service.UpdatePoll(id, pollToUpdate)
+	// update poll
+	var req CreateOrPatchPollRequest
+	if err := c.Bind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+	options := make([]Option, len(req.Options))
+	for i, o := range req.Options {
+		options[i] = Option{
+			Text: o.Text,
+		}
+	}
+	pollToUpdate := Poll{
+		Title:   req.Title,
+		Options: options,
+	}
+	err = h.service.UpdatePoll(pollID, pollToUpdate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update poll"})
 		return
@@ -160,8 +157,7 @@ func (h *Handler) PatchPoll(c *gin.Context) {
 // @Router /polls/{id} [delete]
 // @Security ApiKeyAuth
 func (h *Handler) DeletePoll(c *gin.Context) {
-	id := c.Param("id")
-	// get user id
+	// get user id from cookie
 	uid, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -181,7 +177,7 @@ func (h *Handler) DeletePoll(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "you are not the owner of this poll"})
 		return
 	}
-	if err := h.service.DeletePoll(id); err != nil {
+	if err = h.service.DeletePoll(pollID); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "poll not found"})
 		return
 	}

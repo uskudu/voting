@@ -35,7 +35,7 @@ func (h *Handler) PostUser(c *gin.Context) {
 		return
 	}
 	if err := h.service.CreateUser(req.Username); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"failed creating user": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"failed creating user": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "user created"})
@@ -134,7 +134,6 @@ func (h *Handler) GetUser(c *gin.Context) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param id path string true "User ID"
 // @Param user body user.PatchUserRequest true "PatchUserRequest user input"
 // @Success 200 {object} map[string]string "user updated"
 // @Failure 404 {object} map[string]string "user not found"
@@ -142,13 +141,7 @@ func (h *Handler) GetUser(c *gin.Context) {
 // @Router /users/{id} [patch]
 // @Security ApiKeyAuth
 func (h *Handler) PatchUser(c *gin.Context) {
-	id := c.Param("id")
-	var req PatchUserRequest
-	if err := c.Bind(&req); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-		return
-	}
-	// get user id
+	// get user id from cookie
 	uid, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -156,24 +149,13 @@ func (h *Handler) PatchUser(c *gin.Context) {
 	}
 	userid := uid.(string)
 
-	// get user form db
-	usr, err := h.service.GetUserByID(id)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+	var req PatchUserRequest
+	if err := c.Bind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
-	// validate that user which is trying to update is the owner of the account
-	if usr.ID != userid {
-		c.JSON(http.StatusForbidden, gin.H{"error": "you are not the owner of this account"})
-		return
-	}
-
-	err = h.service.UpdateUser(id, req.Username)
+	err := h.service.UpdateUser(userid, req.Username)
 	if err != nil {
-		if err.Error() == "user not found" {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			return
-		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update user"})
 		return
 	}
@@ -185,14 +167,12 @@ func (h *Handler) PatchUser(c *gin.Context) {
 // @Description Delete user by ID
 // @Tags users
 // @Produce json
-// @Param id path string true "User ID"
 // @Success 200 {object} map[string]string "user deleted"
 // @Failure 404 {object} map[string]string "user not found"
 // @Router /users/{id} [delete]
 // @Security ApiKeyAuth
 func (h *Handler) DeleteUser(c *gin.Context) {
-	id := c.Param("id")
-	// get user id
+	// get user id from cookie
 	uid, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -200,21 +180,10 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 	}
 	userid := uid.(string)
 
-	// get user form db
-	usr, err := h.service.GetUserByID(id)
-	if err != nil {
+	if err := h.service.DeleteUser(userid); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
-	// validate that user which is trying to update is the owner of the account
-	if usr.ID != userid {
-		c.JSON(http.StatusForbidden, gin.H{"error": "you are not the owner of this account"})
-		return
-	}
-
-	if err := h.service.DeleteUser(id); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-		return
-	}
+	c.SetCookie("Authorization", "", -1, "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{"message": "user deleted"})
 }

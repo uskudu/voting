@@ -451,15 +451,6 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Delete a user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "user deleted",
@@ -499,13 +490,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update a user",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "PatchUserRequest user input",
                         "name": "user",

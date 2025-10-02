@@ -49,8 +49,8 @@ func main() {
 	r.POST("/polls", middleware.RequireAuth, pollHandlers.PostPoll)
 	r.GET("/polls", pollHandlers.GetPolls)
 	r.GET("/polls/:id", pollHandlers.GetPoll)
-	r.PATCH("/polls/:id", pollHandlers.PatchPoll)
-	r.DELETE("/polls/:id", pollHandlers.DeletePoll)
+	r.PATCH("/polls/:id", middleware.RequireAuth, pollHandlers.PatchPoll)
+	r.DELETE("/polls/:id", middleware.RequireAuth, pollHandlers.DeletePoll)
 
 	r.POST("/users", userHandler.PostUser)
 	r.GET("/users", userHandler.GetUsers)

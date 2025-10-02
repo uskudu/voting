@@ -206,6 +206,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Delete poll by ID",
                 "produces": [
                     "application/json"
@@ -245,6 +250,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update poll title or options by ID",
                 "consumes": [
                     "application/json"

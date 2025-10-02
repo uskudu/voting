@@ -56,7 +56,7 @@ func (s *pollService) UpdatePoll(id string, poll Poll) error {
 	}
 	for _, option := range pollFromDB.Options {
 		if option.Votes != 0 {
-			return fmt.Errorf("error while updating: you cant edit poll containing one or more votes")
+			return fmt.Errorf("you cant edit poll containing one or more votes")
 		}
 	}
 

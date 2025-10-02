@@ -200,6 +200,11 @@
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Delete poll by ID",
                 "produces": [
                     "application/json"
@@ -239,6 +244,11 @@
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update poll title or options by ID",
                 "consumes": [
                     "application/json"

@@ -101,6 +101,7 @@ func (h *Handler) GetPoll(c *gin.Context) {
 // @Failure 404 {object} map[string]string "poll not found"
 // @Failure 500 {object} map[string]string "could not update poll"
 // @Router /polls/{id} [patch]
+// @Security ApiKeyAuth
 func (h *Handler) PatchPoll(c *gin.Context) {
 	id := c.Param("id")
 	var req CreateOrPatchPollRequest
@@ -119,7 +120,28 @@ func (h *Handler) PatchPoll(c *gin.Context) {
 		Title:   req.Title,
 		Options: options,
 	}
-	err := h.service.UpdatePoll(id, pollToUpdate)
+	// get user id
+	uid, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	userid := uid.(string)
+
+	// get poll form db
+	pollID := c.Param("id")
+	poll, err := h.service.GetPollByID(pollID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "poll not found"})
+		return
+	}
+	// validate that user which is trying to update is the creator of the poll
+	if poll.UserID != userid {
+		c.JSON(http.StatusForbidden, gin.H{"error": "you are not the owner of this poll"})
+		return
+	}
+
+	err = h.service.UpdatePoll(id, pollToUpdate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update poll"})
 		return
@@ -136,8 +158,29 @@ func (h *Handler) PatchPoll(c *gin.Context) {
 // @Success 200 {object} map[string]string "poll deleted"
 // @Failure 404 {object} map[string]string "poll not found"
 // @Router /polls/{id} [delete]
+// @Security ApiKeyAuth
 func (h *Handler) DeletePoll(c *gin.Context) {
 	id := c.Param("id")
+	// get user id
+	uid, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	userid := uid.(string)
+
+	// get poll form db
+	pollID := c.Param("id")
+	poll, err := h.service.GetPollByID(pollID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "poll not found"})
+		return
+	}
+	// validate that user which is trying to update is the creator of the poll
+	if poll.UserID != userid {
+		c.JSON(http.StatusForbidden, gin.H{"error": "you are not the owner of this poll"})
+		return
+	}
 	if err := h.service.DeletePoll(id); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "poll not found"})
 		return

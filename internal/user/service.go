@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type ServiceIface interface {
@@ -59,4 +60,12 @@ func (s *Service) Authenticate(username string) (*User, error) {
 		return nil, errors.New("invalid username")
 	}
 	return &got, nil
+}
+
+func (r *Repository) AddVote(id string) error {
+	result := r.DB.Where("poll_id = ?", id).Update("Options.Votes", gorm.Expr("Options.Votes + ?", 1))
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

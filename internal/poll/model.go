@@ -13,9 +13,9 @@ type CreateOrPatchPollRequest struct {
 }
 
 type Option struct {
+	PollID string `gorm:"index" json:"-"`
 	ID     int    `gorm:"primaryKey;autoIncrement" json:"id"`
 	Text   string `json:"text"`
-	PollID string `gorm:"index" json:"-"`
 	Votes  int    `json:"votes"`
 }
 

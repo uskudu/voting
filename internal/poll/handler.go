@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -39,14 +40,23 @@ func (h *Handler) PostPoll(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
+	pollID := uuid.NewString()
 	options := make([]Option, len(req.Options))
 	for i, o := range req.Options {
 		options[i] = Option{
-			Text: o.Text,
+			PollID: pollID,
+			Text:   o.Text,
+			Votes:  0,
 		}
 	}
+	poll := Poll{
+		ID:      pollID,
+		Title:   req.Title,
+		UserID:  uid.(string),
+		Options: options,
+	}
 	// send to service
-	if err := h.service.CreatePoll(uid.(string), req.Title, options); err != nil {
+	if err := h.service.CreatePoll(&poll); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"failed creating poll": err.Error()})
 		return
 	}
@@ -182,4 +192,49 @@ func (h *Handler) DeletePoll(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "poll deleted"})
+}
+
+// Vote godoc
+// @Summary Vote for poll option
+// @Description Allows an authenticated user to vote for a specific option in a poll
+// @Tags polls
+// @Accept json
+// @Produce json
+// @Param pollID path string true "Poll ID"
+// @Param optionID path string true "option ID"
+// @Success 200 {object} map[string]string "vote added"
+// @Failure 400 {object} map[string]string "option not found"
+// @Failure 401 {object} map[string]string "unauthorized"
+// @Failure 403 {object} map[string]string "you cant vote at your own polls"
+// @Failure 404 {object} map[string]string "poll not found"
+// @Router /polls/{pollID}/options/{optionID}/vote [post]
+// @Security ApiKeyAuth
+func (h *Handler) Vote(c *gin.Context) {
+	// get user id from cookie
+	uid, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	userid := uid.(string)
+	// get poll form db
+	pollID := c.Param("id")
+	poll, err := h.service.GetPollByID(pollID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "poll not found"})
+		return
+	}
+	// validate user cant vote at his own votes
+	if poll.UserID == userid {
+		c.JSON(http.StatusForbidden, gin.H{"error": "you cant vote at your own polls"})
+		return
+	}
+	// add vote
+	optionID := c.Param("optionID")
+	err = h.service.AddVote(pollID, optionID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "option not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "vote added"})
 }

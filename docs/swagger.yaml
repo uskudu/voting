@@ -259,6 +259,61 @@ paths:
       summary: Update a poll
       tags:
       - polls
+  /polls/{pollID}/options/{optionID}/vote:
+    post:
+      consumes:
+      - application/json
+      description: Allows an authenticated user to vote for a specific option in a
+        poll
+      parameters:
+      - description: Poll ID
+        in: path
+        name: pollID
+        required: true
+        type: string
+      - description: option ID
+        in: path
+        name: optionID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: vote added
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: option not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: you cant vote at your own polls
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: poll not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Vote for poll option
+      tags:
+      - polls
   /users:
     get:
       description: Retrieve all users

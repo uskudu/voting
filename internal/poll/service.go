@@ -2,16 +2,15 @@ package poll
 
 import (
 	"fmt"
-
-	"github.com/google/uuid"
 )
 
 type ServiceIface interface {
-	CreatePoll(userid, title string, options []Option) error
+	CreatePoll(poll *Poll) error
 	GetPolls() ([]Poll, error)
 	GetPollByID(id string) (Poll, error)
 	UpdatePoll(id string, poll Poll) error
 	DeletePoll(id string) error
+	AddVote(pollID, optionID string) error
 }
 
 type pollService struct {
@@ -22,20 +21,8 @@ func NewPollService(r RepositoryIface) ServiceIface {
 	return &pollService{repo: r}
 }
 
-func (s *pollService) CreatePoll(uid, title string, options []Option) error {
-	poll := Poll{
-		ID:     uuid.NewString(),
-		UserID: uid,
-		Title:  title,
-	}
-	for _, opt := range options {
-		option := Option{
-			Text:   opt.Text,
-			PollID: poll.ID,
-		}
-		poll.Options = append(poll.Options, option)
-	}
-	if err := s.repo.CreatePoll(&poll); err != nil {
+func (s *pollService) CreatePoll(poll *Poll) error {
+	if err := s.repo.CreatePoll(poll); err != nil {
 		return err
 	}
 	return nil
@@ -63,7 +50,7 @@ func (s *pollService) UpdatePoll(id string, poll Poll) error {
 	pollFromDB.Title = poll.Title
 	pollFromDB.Options = poll.Options
 
-	if err := s.repo.UpdatePoll(&pollFromDB); err != nil {
+	if err = s.repo.UpdatePoll(&pollFromDB); err != nil {
 		return err
 	}
 	return nil
@@ -71,4 +58,8 @@ func (s *pollService) UpdatePoll(id string, poll Poll) error {
 
 func (s *pollService) DeletePoll(id string) error {
 	return s.repo.DeletePoll(id)
+}
+
+func (s *pollService) AddVote(pollID, optionID string) error {
+	return s.repo.AddVote(pollID, optionID)
 }

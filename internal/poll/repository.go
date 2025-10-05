@@ -12,6 +12,7 @@ type RepositoryIface interface {
 	GetPollByID(id string) (Poll, error)
 	UpdatePoll(poll *Poll) error
 	DeletePoll(id string) error
+	AddVote(pollID, optionID string) error
 }
 
 type Repository struct {
@@ -52,6 +53,19 @@ func (r *Repository) DeletePoll(id string) error {
 	}
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("poll not found")
+	}
+	return nil
+}
+
+func (r *Repository) AddVote(pollID, optionID string) error {
+	result := r.DB.Model(&Option{}).
+		Where("poll_id = ? AND id = ?", pollID, optionID).
+		UpdateColumn("votes", gorm.Expr("votes + ?", 1))
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("option not found")
 	}
 	return nil
 }

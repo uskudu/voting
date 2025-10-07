@@ -2,6 +2,7 @@ package poll
 
 import (
 	"net/http"
+	"voting/server"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -236,5 +237,8 @@ func (h *Handler) Vote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "option not found"})
 		return
 	}
+	// websoket notification
+	message := "User " + userid + " voted on your poll '" + poll.Title + "'"
+	server.HubInstance.Notify(poll.UserID, message)
 	c.JSON(http.StatusOK, gin.H{"message": "vote added"})
 }

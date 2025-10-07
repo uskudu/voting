@@ -48,7 +48,7 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.GET("/ws", server.WebSocketHandler)
-	
+
 	r.POST("/polls", middleware.RequireAuth, pollHandlers.PostPoll)
 	r.GET("/polls", pollHandlers.GetPolls)
 	r.GET("/polls/:id", pollHandlers.GetPoll)

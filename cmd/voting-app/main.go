@@ -6,6 +6,7 @@ import (
 	"voting/internal/middleware"
 	"voting/internal/poll"
 	"voting/internal/user"
+	"voting/server"
 
 	"github.com/gin-gonic/gin"
 
@@ -46,6 +47,8 @@ func main() {
 	r := gin.Default()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	r.GET("/ws", server.WebSocketHandler)
+	
 	r.POST("/polls", middleware.RequireAuth, pollHandlers.PostPoll)
 	r.GET("/polls", pollHandlers.GetPolls)
 	r.GET("/polls/:id", pollHandlers.GetPoll)

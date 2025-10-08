@@ -6,6 +6,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type Client struct {
+	ID   string
+	Conn *websocket.Conn
+	Send chan []byte
+}
+
 func (c *Client) ReadPump() {
 	defer func() {
 		HubInstance.Unregister <- c

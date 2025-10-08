@@ -1,9 +1,5 @@
 package ws
 
-import (
-	"github.com/gorilla/websocket"
-)
-
 type Hub struct {
 	Clients    map[string]*Client
 	Register   chan *Client
@@ -14,12 +10,6 @@ type Hub struct {
 type Message struct {
 	To      string
 	Content []byte
-}
-
-type Client struct {
-	ID   string
-	Conn *websocket.Conn
-	Send chan []byte
 }
 
 func NewHub() *Hub {

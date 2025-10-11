@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"voting/notifications/email"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -240,12 +241,15 @@ func (h *Handler) Vote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "option not found"})
 		return
 	}
+	// done
+	c.JSON(http.StatusOK, gin.H{"message": "vote added"})
+	
 	// websoket notification
 	// message := "new vote on your poll " + "'" + poll.Title + "'"
 	// ws.HubInstance.Notify(poll.UserID, message)
 
 	// rabbitmq notification
-	msg := "new vote on your poll " + "'" + poll.Title + "'"
+	msg := "you have new vote on your poll " + "'" + poll.Title + "'"
 	notification := map[string]string{
 		"to":      poll.UserID,
 		"message": msg,
@@ -264,7 +268,12 @@ func (h *Handler) Vote(c *gin.Context) {
 	if err != nil {
 		log.Println("RMQ publish error:", err)
 	}
+	// email notification
+	err = email.SendMail(notification)
+	if err != nil {
+		log.Fatal("mail not sent. error occurred: ", err)
+	} else {
+		log.Println("mail sent")
+	}
 
-	// done
-	c.JSON(http.StatusOK, gin.H{"message": "vote added"})
 }

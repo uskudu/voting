@@ -1,19 +1,22 @@
 package poll
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
-	"voting/notifications/ws"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/rabbitmq/amqp091-go"
 )
 
 type Handler struct {
 	service ServiceIface
+	rmq     *amqp091.Channel
 }
 
-func NewPollHandler(s ServiceIface) *Handler {
-	return &Handler{service: s}
+func NewPollHandler(s ServiceIface, ch *amqp091.Channel) *Handler {
+	return &Handler{service: s, rmq: ch}
 }
 
 // PostPoll godoc
@@ -238,8 +241,30 @@ func (h *Handler) Vote(c *gin.Context) {
 		return
 	}
 	// websoket notification
-	message := "User " + userid + " voted on your poll '" + poll.Title + "'"
-	ws.HubInstance.Notify(poll.UserID, message)
+	// message := "new vote on your poll " + "'" + poll.Title + "'"
+	// ws.HubInstance.Notify(poll.UserID, message)
 
+	// rabbitmq notification
+	msg := "new vote on your poll " + "'" + poll.Title + "'"
+	notification := map[string]string{
+		"to":      poll.UserID,
+		"message": msg,
+	}
+	body, _ := json.Marshal(notification)
+	err = h.rmq.Publish(
+		"",
+		"voteNotifications",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        body,
+		},
+	)
+	if err != nil {
+		log.Println("RMQ publish error:", err)
+	}
+
+	// done
 	c.JSON(http.StatusOK, gin.H{"message": "vote added"})
 }

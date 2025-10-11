@@ -28,6 +28,7 @@ func (c *Client) ReadPump() {
 func (c *Client) WritePump() {
 	defer c.Conn.Close()
 	for msg := range c.Send {
+		log.Printf("notification: %s", msg)
 		if err := c.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 			log.Println("write error:", err)
 			break

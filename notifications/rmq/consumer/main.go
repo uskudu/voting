@@ -45,13 +45,13 @@ func main() {
 			}
 			log.Printf("Received vote event for poll '%s' by user '%s'\n", event.PollTitle, event.UserID)
 
-			// Формируем уведомление
+			// create notification
 			n := rmq.VoteNotification{
 				To:      event.PollOwner,
 				Message: "new vote on your poll '" + event.PollTitle + "'.",
 			}
 
-			// Отправляем асинхронно
+			// send async email
 			go func() {
 				if err := email.SendMail(n); err != nil {
 					log.Printf("Failed to send email: %v\n", err)

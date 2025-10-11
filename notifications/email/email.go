@@ -1,19 +1,22 @@
 package email
 
 import (
+	"fmt"
 	"net/smtp"
 	"os"
+	"voting/notifications/rmq"
 )
 
-func SendMail(notification map[string]string) error {
-
+func SendMail(n rmq.VoteNotification) error {
 	auth := smtp.PlainAuth(
 		"",
 		os.Getenv("GMAIL_ADDRESS"),
 		os.Getenv("GMAIL_PASSWORD"),
 		os.Getenv("MAIL_HOST"),
 	)
-	msg := []byte("Subject: my special subject\n" + "dear " + notification["to"] + "!" + "\n" + notification["message"])
+	subject := "subject: new vote notification\n"
+	body := fmt.Sprintf("Dear %s,\n\n%s\n", n.To, n.Message)
+	msg := []byte(subject + "\n" + body)
 	err := smtp.SendMail(
 		os.Getenv("MAIL_HOST_ADDRESS"),
 		auth,

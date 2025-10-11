@@ -4,20 +4,20 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"voting/notifications/email"
+	"time"
+	"voting/notifications/rmq"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/rabbitmq/amqp091-go"
 )
 
 type Handler struct {
 	service ServiceIface
-	rmq     *amqp091.Channel
+	rmq     *rmq.RMQ
 }
 
-func NewPollHandler(s ServiceIface, ch *amqp091.Channel) *Handler {
-	return &Handler{service: s, rmq: ch}
+func NewPollHandler(s ServiceIface, rmqPtr *rmq.RMQ) *Handler {
+	return &Handler{service: s, rmq: rmqPtr}
 }
 
 // PostPoll godoc
@@ -241,39 +241,23 @@ func (h *Handler) Vote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "option not found"})
 		return
 	}
+	// publish event in rmq
+	event := map[string]string{
+		"type":      "vote",
+		"pollID":    pollID,
+		"optionID":  optionID,
+		"userID":    userid,
+		"pollOwner": poll.UserID,
+		"pollTitle": poll.Title,
+		"timestamp": time.Now().Format(time.RFC3339),
+	}
+
+	body, _ := json.Marshal(event)
+	go func() {
+		if err := h.rmq.Publish(body); err != nil {
+			log.Println("RMQ publish error:", err)
+		}
+	}()
 	// done
 	c.JSON(http.StatusOK, gin.H{"message": "vote added"})
-	
-	// websoket notification
-	// message := "new vote on your poll " + "'" + poll.Title + "'"
-	// ws.HubInstance.Notify(poll.UserID, message)
-
-	// rabbitmq notification
-	msg := "you have new vote on your poll " + "'" + poll.Title + "'"
-	notification := map[string]string{
-		"to":      poll.UserID,
-		"message": msg,
-	}
-	body, _ := json.Marshal(notification)
-	err = h.rmq.Publish(
-		"",
-		"voteNotifications",
-		false,
-		false,
-		amqp091.Publishing{
-			ContentType: "application/json",
-			Body:        body,
-		},
-	)
-	if err != nil {
-		log.Println("RMQ publish error:", err)
-	}
-	// email notification
-	err = email.SendMail(notification)
-	if err != nil {
-		log.Fatal("mail not sent. error occurred: ", err)
-	} else {
-		log.Println("mail sent")
-	}
-
 }

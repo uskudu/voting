@@ -1,45 +1,52 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/rabbitmq/amqp091-go"
+	"voting/notifications/email"
+	"voting/notifications/rmq"
 )
 
-const queueName = "voteNotifications"
-
 func main() {
-	// new conn
-	conn, err := amqp091.Dial("amqp://localhost:5672")
-	if err != nil {
-		panic(err)
-	}
-	defer conn.Close()
+	rmqClient := rmq.NewRMQ("amqp://localhost:5672")
+	defer rmqClient.Close()
 
-	// open chan
-	channel, err := conn.Channel()
+	msgs, err := rmqClient.Consume("voteNotifications")
 	if err != nil {
-		panic(err)
-	}
-	defer channel.Close()
-	// subscribe to get messages from the queue
-	messages, err := channel.Consume(queueName, "", true, false, false, false, nil)
-	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
-	// wait for messages
+
+	log.Println("Consumer started...")
+
 	for {
 		select {
-		case message := <-messages:
-			log.Printf("message: %s\n", message.Body)
+		case message := <-msgs:
+			var notification rmq.VoteNotification
+			if err := json.Unmarshal(message.Body, &notification); err != nil {
+				log.Println("Invalid message:", err)
+				continue
+			}
+
+			log.Printf("Received notification for %s: %s\n", notification.To, notification.Message)
+
+			// отправка email асинхронно
+			go func(n rmq.VoteNotification) {
+				if err := email.SendMail(n); err != nil {
+					log.Println("Failed to send email:", err)
+				} else {
+					log.Println("Email sent to", n.To)
+				}
+			}(notification)
+
 		case <-sigchan:
-			log.Println("interrupt detected!")
+			log.Println("Interrupt detected! Exiting...")
 			os.Exit(0)
 		}
 	}

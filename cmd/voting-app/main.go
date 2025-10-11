@@ -37,12 +37,13 @@ func main() {
 		panic(err)
 	}
 	// rabbitmq
-	ch := rmq.SetupRMQ()
+	rmqClient := rmq.NewRMQ("amqp://localhost:5672")
+	defer rmqClient.Close()
 
 	// api
 	pollRepo := poll.NewPollRepository(database)
 	pollService := poll.NewPollService(pollRepo)
-	pollHandlers := poll.NewPollHandler(pollService, ch)
+	pollHandlers := poll.NewPollHandler(pollService, rmqClient)
 
 	userRepo := user.NewUserRepository(database)
 	userService := user.NewUserService(userRepo)

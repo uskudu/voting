@@ -1,16 +1,15 @@
 package main
 
 import (
-	"log"
 	"voting/initializers"
 	"voting/internal/db"
 	"voting/internal/middleware"
 	"voting/internal/poll"
 	"voting/internal/user"
+	"voting/notifications/rmq"
 	"voting/notifications/ws"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rabbitmq/amqp091-go"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -37,22 +36,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	// rabbitmq
-	conn, err := amqp091.Dial("amqp://localhost:5672")
-	if err != nil {
-		log.Fatal(err)
-	}
-	ch, err := conn.Channel()
-	if err != nil {
-		log.Fatal(err)
-	}
+	ch := rmq.SetupRMQ()
 
-	_, err = ch.QueueDeclare("VoteNotifications", true, false, false, false, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	// api
 	pollRepo := poll.NewPollRepository(database)
 	pollService := poll.NewPollService(pollRepo)
 	pollHandlers := poll.NewPollHandler(pollService, ch)

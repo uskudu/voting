@@ -11,6 +11,16 @@ type VoteNotification struct {
 	Message string `json:"message"`
 }
 
+type VoteEvent struct {
+	Type      string `json:"type"`
+	PollID    string `json:"pollID"`
+	OptionID  string `json:"optionID"`
+	UserID    string `json:"userID"`
+	PollOwner string `json:"pollOwner"`
+	PollTitle string `json:"pollTitle"`
+	Timestamp string `json:"timestamp"`
+}
+
 type RMQ struct {
 	conn *amqp091.Connection
 	ch   *amqp091.Channel

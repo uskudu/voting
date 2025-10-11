@@ -2,52 +2,67 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/rabbitmq/amqp091-go"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
-
 	"voting/notifications/email"
 	"voting/notifications/rmq"
 )
 
-func main() {
-	rmqClient := rmq.NewRMQ("amqp://localhost:5672")
-	defer rmqClient.Close()
+const queueName = "voteNotifications"
 
-	msgs, err := rmqClient.Consume("voteNotifications")
+func main() {
+	conn, err := amqp091.Dial("amqp://localhost:5672")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
+	}
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	if err != nil {
+		panic(err)
+	}
+	defer ch.Close()
+
+	msgs, err := ch.Consume(queueName, "", true, false, false, false, nil)
+	if err != nil {
+		panic(err)
 	}
 
+	log.Println("Consumer started...")
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Println("Consumer started...")
-
 	for {
 		select {
-		case message := <-msgs:
-			var notification rmq.VoteNotification
-			if err := json.Unmarshal(message.Body, &notification); err != nil {
-				log.Println("Invalid message:", err)
+		case msg := <-msgs:
+			var event rmq.VoteEvent
+			if err := json.Unmarshal(msg.Body, &event); err != nil {
+				log.Println("JSON decode error:", err)
 				continue
 			}
+			log.Printf("Received vote event for poll '%s' by user '%s'\n", event.PollTitle, event.UserID)
 
-			log.Printf("Received notification for %s: %s\n", notification.To, notification.Message)
+			// Формируем уведомление
+			n := rmq.VoteNotification{
+				To:      event.PollOwner,
+				Message: "new vote on your poll '" + event.PollTitle + "'.",
+			}
 
-			// отправка email асинхронно
-			go func(n rmq.VoteNotification) {
+			// Отправляем асинхронно
+			go func() {
 				if err := email.SendMail(n); err != nil {
-					log.Println("Failed to send email:", err)
+					log.Printf("Failed to send email: %v\n", err)
 				} else {
-					log.Println("Email sent to", n.To)
+					log.Printf("Email sent to %s\n", n.To)
 				}
-			}(notification)
+			}()
 
 		case <-sigchan:
-			log.Println("Interrupt detected! Exiting...")
-			os.Exit(0)
+			log.Println("interrupt detected - shutting down.")
+			return
 		}
 	}
 }

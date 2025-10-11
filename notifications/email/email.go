@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"net/smtp"
 	"os"
+	"voting/initializers"
 	"voting/notifications/rmq"
 )
 
 func SendMail(n rmq.VoteNotification) error {
+	initializers.LoadEnvVars()
 	auth := smtp.PlainAuth(
 		"",
 		os.Getenv("GMAIL_ADDRESS"),

@@ -38,20 +38,20 @@ func main() {
 		panic(err)
 	}
 
-	// rabbitmq
-	conn, err := amqp091.Dial("amqp://localhost:5672")
-	if err != nil {
-		log.Fatal(err)
-	}
-	ch, err := conn.Channel()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = ch.QueueDeclare("VoteNotifications", true, false, false, false, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//// rabbitmq
+	//conn, err := amqp091.Dial("amqp://localhost:5672")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//ch, err := conn.Channel()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//_, err = ch.QueueDeclare("VoteNotifications", true, false, false, false, nil)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	pollRepo := poll.NewPollRepository(database)
 	pollService := poll.NewPollService(pollRepo)

@@ -1,22 +1,23 @@
 package poll
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/rabbitmq/amqp091-go"
+	"github.com/segmentio/kafka-go"
 )
 
 type Handler struct {
-	service ServiceIface
-	rmq     *amqp091.Channel
+	service  ServiceIface
+	producer *kafka.Writer
 }
 
-func NewPollHandler(s ServiceIface, ch *amqp091.Channel) *Handler {
-	return &Handler{service: s, rmq: ch}
+func NewPollHandler(s ServiceIface, pr *kafka.Writer) *Handler {
+	return &Handler{service: s, producer: pr}
 }
 
 // PostPoll godoc
@@ -251,18 +252,15 @@ func (h *Handler) Vote(c *gin.Context) {
 		"message": msg,
 	}
 	body, _ := json.Marshal(notification)
-	err = h.rmq.Publish(
-		"",
-		"voteNotifications",
-		false,
-		false,
-		amqp091.Publishing{
-			ContentType: "application/json",
-			Body:        body,
+
+	err = h.producer.WriteMessages(context.Background(),
+		kafka.Message{
+			Key:   []byte(poll.UserID),
+			Value: body,
 		},
 	)
 	if err != nil {
-		log.Println("RMQ publish error:", err)
+		log.Println("Kafka write error:", err)
 	}
 
 	// done
